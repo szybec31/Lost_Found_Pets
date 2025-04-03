@@ -1,3 +1,6 @@
+from datetime import date
+
+from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, FileExtensionValidator
@@ -8,21 +11,49 @@ phone_validator = RegexValidator(
     regex=r'^\d{9}$',
     message="Enter a valid phone number with country code (e.g., 123456789).",
 )
+# model Admina
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):  # Tworzenie nowego użytkownika
+        if not email:  # Sprawdzanie, czy podano email
+            raise ValueError('The Username field must be set')
 
-#create your models here.
-class User(AbstractUser):
-    phone_number = models.CharField(max_length=9, validators=[phone_validator])
+        # Ustawienie domyślnych wartości dla opcjonalnych pól
+        extra_fields.setdefault('phone', 'Unknown')
+        extra_fields.setdefault('first_name', 'No Name')
+        extra_fields.setdefault('last_name', 'No Name')
+        #extra_fields.setdefault('is_superuser', 0)
+        extra_fields.setdefault('last_login', date.today())
+        extra_fields.setdefault('date_joined', date.today())
 
-    username = None
-    email = models.EmailField(unique=True)
+        user = self.model(email=email, **extra_fields)  # Tworzenie instancji modelu użytkownika
+        user.set_password(password)  # Haszowanie hasła
+        user.save(using=self._db)  # Zapis użytkownika w bazie danych
+        return user
 
-    objects = UserManager()
+# model Usera
+class UserModel(AbstractBaseUser):
+
+    id = models.BigAutoField(primary_key=True, db_column='id')
+    email = models.EmailField(unique=True,db_column='email')
+    phone = models.CharField(max_length=9, validators=[phone_validator],db_column='phone_number')
+    first_name = models.CharField(max_length=30,db_column='first_name')
+    is_superuser = models.IntegerField(default=0,db_column='is_superuser')
+    is_staff = models.IntegerField(default=0,db_column='is_staff')
+    is_active = models.IntegerField(default=0,db_column='is_active')
+    last_name = models.CharField(max_length=30,db_column='last_name')
+    last_login = models.DateTimeField(db_column='last_login')
+    date_joined = models.DateTimeField(default=date.today(),db_column='date_joined')
+
+    objects = CustomUserManager()
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "email"
-    
-    def __str__(self) -> str:
-        return f"User(id={self.id})"
+
+    class Meta:
+        db_table = "app_user"
+
+    def __str__(self):
+        return self.email#f"User(id={self.id})"
     
 class Raports(models.Model):
     class RaportTypeChoices(models.TextChoices):
@@ -32,7 +63,7 @@ class Raports(models.Model):
         CAT = "Cat"
         DOG = "Dog"
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="raports")
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports")
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices)
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices)
 
