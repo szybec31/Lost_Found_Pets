@@ -1,7 +1,11 @@
 from django.contrib import admin
+'''
 from django.contrib.auth.admin import UserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import User, Raports, Images
+
+
+
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
@@ -28,3 +32,5 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Raports)
 admin.site.register(Images)
+
+'''

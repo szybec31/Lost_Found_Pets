@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app'
+    'app',
+    "rest_framework",  # Django REST Framework
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -106,6 +108,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',  # Używaj tylko JSON
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+}
 
 
 # Internationalization
@@ -131,7 +139,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-AUTH_USER_MODEL = "app.User"
+AUTH_USER_MODEL = "app.UserModel"
 
 MEDIA_URL = '/media/' 
 MEDIA_ROOT = BASE_DIR / 'media'
