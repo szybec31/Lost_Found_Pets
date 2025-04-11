@@ -26,6 +26,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("email",)
     ordering = ("email",)
 
-admin.site.register(UserModel, CustomUserAdmin)
+
 admin.site.register(Raports)
+admin.site.register(UserModel, CustomUserAdmin)
 admin.site.register(Images)

@@ -22,7 +22,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('phone', 'Unknown')
         extra_fields.setdefault('first_name', 'No Name')
         extra_fields.setdefault('last_name', 'No Name')
-        #extra_fields.setdefault('is_superuser', 0)
+        extra_fields.setdefault('is_superuser', 0)
         extra_fields.setdefault('last_login', date.today())
         extra_fields.setdefault('date_joined', date.today())
 
@@ -41,7 +41,6 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(email, password, **extra_fields)
-
 # model Usera
 class UserModel(AbstractBaseUser, PermissionsMixin):
 
@@ -54,7 +53,7 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     is_active = models.IntegerField(default=0,db_column='is_active')
     last_name = models.CharField(max_length=30,db_column='last_name')
     last_login = models.DateTimeField(db_column='last_login')
-    date_joined = models.DateTimeField(default=now,db_column='date_joined')
+    date_joined = models.DateTimeField(db_column='date_joined')
 
     objects = CustomUserManager()
 
@@ -65,7 +64,7 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
         db_table = "app_user"
 
     def __str__(self):
-        return self.email#f"User(id={self.id})"
+        return self.email
     
 class Raports(models.Model):
     class RaportTypeChoices(models.TextChoices):
@@ -75,11 +74,17 @@ class Raports(models.Model):
         CAT = "Cat"
         DOG = "Dog"
 
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports")
-    raport_type = models.CharField(max_length=5, choices=RaportTypeChoices)
-    animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices)
-    date_added = models.DateTimeField(default=now)
-    description = models.CharField(max_length=300)
+    user_id = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports",db_column="user_id")
+    raport_type = models.CharField(max_length=5, choices=RaportTypeChoices,db_column="raport_type")
+    animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices,db_column="animal_type")
+    date_added = models.DateTimeField(db_column="date_added")
+    address = models.CharField(max_length=20,default="",db_column="address")
+    description = models.CharField(max_length=300,default="",db_column="description")
+
+
+    class Meta:
+        db_table = 'app_raports'
+'''
 
     class Meta:
         verbose_name = "Raport"
@@ -88,9 +93,14 @@ class Raports(models.Model):
     def __str__(self) -> str:
         return f"Raport(id={self.id})"
 
+'''
+
+
+
 class RaportsLink(models.Model):
     raport_link1 = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="raport_link1")
     raport_link2 = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="raport_link2")
+
 
     class Meta:
         verbose_name = "Raport_Linked"
@@ -100,7 +110,7 @@ class RaportsLink(models.Model):
         return f"RaportLink(id={self.id})"
     
 class Images(models.Model):
-    image = models.ImageField(upload_to="animal_images")
+    image = models.ImageField(upload_to="IMG_Database/Cats")
     image_attributes = models.FileField(upload_to="animal_attributes", validators=[FileExtensionValidator(["csv"])])
     raport = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="images")
 

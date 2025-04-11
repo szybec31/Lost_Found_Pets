@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserModel
+from .models import UserModel, Raports
 
 
 # Serializer od użytkownika
@@ -19,3 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
             last_name = validated_data['last_name']
         )
         return user
+
+class Add_Raport_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Raports
+        fields = ['id','user_id','raport_type','animal_type','date_added','address','description']
