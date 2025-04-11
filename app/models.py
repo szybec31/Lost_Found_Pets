@@ -78,6 +78,8 @@ class Raports(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports")
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices)
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices)
+    date_added = models.DateTimeField(default=now)
+    description = models.CharField(max_length=300)
 
     class Meta:
         verbose_name = "Raport"

@@ -10,7 +10,6 @@ from .views import UserView, RegisterUser
 
 urlpatterns = [
     path('',index,name='index'),
-    path('new_user/',RegisterUser.as_view(),name='new_user')
 
 
 

@@ -18,11 +18,16 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from app.views import UserView, RegisterUser
+from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
+
+from app.views import UserView, RegisterUser, CustomTokenObtainPairView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('new_user/',RegisterUser.as_view(),name='new_user')
+    path('new_user/',RegisterUser.as_view(),name='new_user'),
+    path("login/", CustomTokenObtainPairView.as_view(), name="token_get"),  # URL rest framework do loginu
+    path("logout/", TokenRefreshView.as_view(), name="token_refresh"),
+
     ]
 
 if settings.DEBUG:
