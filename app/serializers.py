@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserModel, Raports
+from .models import UserModel, Raports, Images
 
 
 # Serializer od użytkownika
@@ -20,7 +20,27 @@ class UserSerializer(serializers.ModelSerializer):
         )
         return user
 
+class Add_Raport_IMG_Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ['id','image','raport_id']
+
 class Add_Raport_Serializer(serializers.ModelSerializer):
+    images = Add_Raport_IMG_Serializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(), write_only=True, required=False
+    )
+
     class Meta:
         model = Raports
-        fields = ['id','user_id','raport_type','animal_type','date_added','address','description']
+        fields = ['id','user_id','raport_type','animal_type','date_added','address','description','images', 'uploaded_images']
+
+    def create(self, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        raport = Raports.objects.create(**validated_data)
+
+        for image in uploaded_images:
+            Images.objects.create(raport=raport, image=image)
+
+        return raport
+

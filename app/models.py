@@ -50,7 +50,7 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30,db_column='first_name')
     is_superuser = models.IntegerField(default=0,db_column='is_superuser')
     is_staff = models.IntegerField(default=0,db_column='is_staff')
-    is_active = models.IntegerField(default=0,db_column='is_active')
+    is_active = models.IntegerField(default=1,db_column='is_active')
     last_name = models.CharField(max_length=30,db_column='last_name')
     last_login = models.DateTimeField(db_column='last_login')
     date_joined = models.DateTimeField(db_column='date_joined')
@@ -74,6 +74,7 @@ class Raports(models.Model):
         CAT = "Cat"
         DOG = "Dog"
 
+    id = models.BigAutoField(primary_key=True, db_column='id')
     user_id = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports",db_column="user_id")
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices,db_column="raport_type")
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices,db_column="animal_type")
@@ -110,9 +111,10 @@ class RaportsLink(models.Model):
         return f"RaportLink(id={self.id})"
     
 class Images(models.Model):
-    image = models.ImageField(upload_to="IMG_Database/Cats")
-    image_attributes = models.FileField(upload_to="animal_attributes", validators=[FileExtensionValidator(["csv"])])
-    raport = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="images")
+    id = models.BigAutoField(primary_key=True, db_column='id')
+    image = models.ImageField(upload_to="Animals",db_column='image')
+    #image_attributes = models.FileField(upload_to="IMG_Database", validators=[FileExtensionValidator(["csv"])])
+    raport = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="images",db_column='raport_id')
 
     class Meta:
         verbose_name = "Image"
