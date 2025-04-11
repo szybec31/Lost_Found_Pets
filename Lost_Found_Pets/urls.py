@@ -20,14 +20,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
-from app.views import UserView, RegisterUser, CustomTokenObtainPairView
+from app.views import UserView, RegisterUser, CustomTokenObtainPairView, Add_Raport
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('new_user/',RegisterUser.as_view(),name='new_user'),
     path("login/", CustomTokenObtainPairView.as_view(), name="token_get"),  # URL rest framework do loginu
     path("logout/", TokenRefreshView.as_view(), name="token_refresh"),
-
+    path("new_raport/", Add_Raport.as_view(), name="token_refresh"),
     ]
 
 if settings.DEBUG:
