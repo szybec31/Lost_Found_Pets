@@ -1,8 +1,9 @@
 from datetime import date
+from django.utils.timezone import now
 
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.core.validators import RegexValidator, FileExtensionValidator
 from .managers import UserManager
 
@@ -29,9 +30,20 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)  # Haszowanie hasła
         user.save(using=self._db)  # Zapis użytkownika w bazie danych
         return user
+    def create_superuser(self, email, password=None, **extra_fields):
+        # Ustawienie wymaganych pól dla superużytkownika
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
 
 # model Usera
-class UserModel(AbstractBaseUser):
+class UserModel(AbstractBaseUser, PermissionsMixin):
 
     id = models.BigAutoField(primary_key=True, db_column='id')
     email = models.EmailField(unique=True,db_column='email')
@@ -42,7 +54,7 @@ class UserModel(AbstractBaseUser):
     is_active = models.IntegerField(default=0,db_column='is_active')
     last_name = models.CharField(max_length=30,db_column='last_name')
     last_login = models.DateTimeField(db_column='last_login')
-    date_joined = models.DateTimeField(default=date.today(),db_column='date_joined')
+    date_joined = models.DateTimeField(default=now,db_column='date_joined')
 
     objects = CustomUserManager()
 
@@ -66,6 +78,8 @@ class Raports(models.Model):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports")
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices)
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices)
+    date_added = models.DateTimeField(default=now)
+    description = models.CharField(max_length=300)
 
     class Meta:
         verbose_name = "Raport"
@@ -74,6 +88,17 @@ class Raports(models.Model):
     def __str__(self) -> str:
         return f"Raport(id={self.id})"
 
+class RaportsLink(models.Model):
+    raport_link1 = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="raport_link1")
+    raport_link2 = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="raport_link2")
+
+    class Meta:
+        verbose_name = "Raport_Linked"
+        verbose_name_plural = "Raports_Linked" 
+
+    def __str__(self) -> str:
+        return f"RaportLink(id={self.id})"
+    
 class Images(models.Model):
     image = models.ImageField(upload_to="animal_images")
     image_attributes = models.FileField(upload_to="animal_attributes", validators=[FileExtensionValidator(["csv"])])

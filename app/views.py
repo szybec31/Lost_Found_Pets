@@ -1,9 +1,12 @@
+from datetime import date
+
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import get_user_model
 from .models import UserModel
 from .serializers import UserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,6 +20,27 @@ class UserView(generics.ListCreateAPIView):
     queryset = UserModel.objects.raw('SELECT * FROM app_user')  # Zapytanie do SQL o wszystkich użytkowników
     serializer_class = UserSerializer  # Serializer do danych użytkownika
     permission_classes = [AllowAny]  # Otwarty dostęp dla wszystkich użytkowników
+
+# Widok do uzyskiwania tokenu użytkownika
+class CustomTokenObtainPairView(TokenObtainPairView):
+
+    def post(self, request, *args, **kwargs):  # Żądanie POST nadpisywane z TokenObtainPairView, stąd args i kwargs
+        response = super().post(request, *args, **kwargs)
+        email = request.data['email']  # Pobieranie loginu użytkownika z danych żadania
+        print("Request data:", request.data['email'])
+        print(email)
+        if email:
+            # Pobierz model użytkownika na podstawie nazwy użytkownika
+            User = get_user_model()
+            try:
+                user = User.objects.get(email=email)  # Szukanie użytkownika na podstawie jego loginu
+                # Aktualizuj last_login
+                user.last_login = date.today()
+                user.save()  # Zapisywanie zmian w bazie danych
+            except User.DoesNotExist:
+                pass
+
+        return response
 
 
 class RegisterUser(APIView):
