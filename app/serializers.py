@@ -6,7 +6,7 @@ from .models import UserModel, Raports, Images
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel  # Powiązanie z modelem od klienta
-        fields = ['email', 'password', 'phone','first_name','last_name']  # Pola do serializacji z bazy danych
+        fields = ['email', 'password', 'phone','first_name','last_name','date_joined']  # Pola do serializacji z bazy danych
         extra_kwargs = {"password": {"write_only": True}}  # Hasło dostępne tylko do zapisu niewidoczne w odpowiedzi
 
     # Tworzenie użytkownika
@@ -33,7 +33,7 @@ class Add_Raport_Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = Raports
-        fields = ['id','user_id','raport_type','animal_type','date_added','address','description','images', 'uploaded_images']
+        fields = ['id','user_id','raport_type','animal_type','date_added','district','description','images', 'uploaded_images']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -44,3 +44,13 @@ class Add_Raport_Serializer(serializers.ModelSerializer):
 
         return raport
 
+class RaportWithImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Raports
+        fields = ['id', 'raport_type', 'animal_type', 'date_added', 'image']
+
+    def get_image(self, obj):
+        image = obj.images.first()  # tylko jedno zdjęcie
+        return image.image.url if image else None
