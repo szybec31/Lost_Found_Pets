@@ -1,15 +1,13 @@
 from datetime import date, datetime
 
-from django.shortcuts import render
+from django.db.models import Count
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.utils.representation import serializer_repr
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
-from .models import UserModel
-from .serializers import UserSerializer, Add_Raport_Serializer, Add_Raport_IMG_Serializer
+from .models import UserModel, Raports
+from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
@@ -73,15 +71,32 @@ class Add_Raport(APIView):
         else:
             return Response(serializer.errors)
 
-class Add_Raport_IMG(APIView):
+class User_info(APIView):
     permission_classes = [IsAuthenticated]
+    def get(self, request):  # Żądanie GET
+        print(request.user)
+        email = request.user
+        user = get_user_model()
+        user_info = user.objects.get(email=email)  # Pobieranie wszystkich danych o uzytkowniku
+        serializer = UserSerializer(user_info)  # Serializacja listy danych usera (przekształcanie obiektów w listę słowników)
+        return Response(serializer.data)  # Dane zwracane w formacie Json
 
     def post(self,request):
-        data = request.data
+        user = request.user
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
 
-        serializer = Add_Raport_IMG_Serializer(data=data)
-        if serializer.is_valid():
-            serializer.save()  # Zapis raportu w bazie danych
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors)
+        if not user.check_password(old_password):
+            return Response({"detail": "Old password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Password has been changed."}, status=status.HTTP_200_OK)
+
+
+class RaportsWithOneImageView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = RaportWithImageSerializer
+
+    def get_queryset(self):
+        return Raports.objects.annotate(image_count=Count('images')).filter(image_count__gte=1).prefetch_related('images').order_by('-date_added')

@@ -1,6 +1,6 @@
 from datetime import date
 from django.utils.timezone import now
-
+import os
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
@@ -79,7 +79,7 @@ class Raports(models.Model):
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices,db_column="raport_type")
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices,db_column="animal_type")
     date_added = models.DateTimeField(db_column="date_added")
-    address = models.CharField(max_length=20,default="",db_column="address")
+    district = models.CharField(max_length=20,default="",db_column="district")
     description = models.CharField(max_length=300,default="",db_column="description")
 
 
@@ -109,10 +109,19 @@ class RaportsLink(models.Model):
 
     def __str__(self) -> str:
         return f"RaportLink(id={self.id})"
-    
+
+# Zapis zdjecia z unikatową nazwą
+def numbered_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    raport_id = instance.raport.id if instance.raport else 'new'
+    existing_images = Images.objects.filter(raport=instance.raport).count()
+    next_number = existing_images + 1
+    filename = f"raport_{raport_id}_img_nr_{next_number}.{ext}"
+    return os.path.join("Animals", filename)
+
 class Images(models.Model):
     id = models.BigAutoField(primary_key=True, db_column='id')
-    image = models.ImageField(upload_to="Animals",db_column='image')
+    image = models.ImageField(upload_to=numbered_upload_path,db_column='image')
     #image_attributes = models.FileField(upload_to="IMG_Database", validators=[FileExtensionValidator(["csv"])])
     raport = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="images",db_column='raport_id')
 
@@ -122,3 +131,5 @@ class Images(models.Model):
 
     def __str__(self) -> str:
         return f"Image(id={self.id})"
+
+
