@@ -6,7 +6,7 @@ from .models import UserModel, Raports, Images
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel  # Powiązanie z modelem od klienta
-        fields = ['email', 'password', 'phone','first_name','last_name','date_joined']  # Pola do serializacji z bazy danych
+        fields = ['email', 'password', 'phone','first_name','last_name']  # Pola do serializacji z bazy danych
         extra_kwargs = {"password": {"write_only": True}}  # Hasło dostępne tylko do zapisu niewidoczne w odpowiedzi
 
     # Tworzenie użytkownika

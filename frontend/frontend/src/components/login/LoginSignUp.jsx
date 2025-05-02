@@ -21,7 +21,7 @@ const LoginSignUp = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.name === "phone" ? Number(e.target.value) : e.target.value
     });
   };
 
@@ -34,7 +34,8 @@ const LoginSignUp = () => {
       } else {
         await login(formData.email, formData.password);
       }
-      navigate('/'); // Przekierowanie po udanej autentykacji
+        console.log(formData)
+      //navigate('/'); // Przekierowanie po udanej autentykacji
     } catch (error) {
       console.error('Error:', error);
       alert(action === "Sign Up" ? 'Registration failed' : 'Login failed');

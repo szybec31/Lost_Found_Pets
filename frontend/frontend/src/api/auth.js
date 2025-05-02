@@ -20,7 +20,11 @@ export const login = async (email, password) => {
     body: JSON.stringify({ email, password })
   });
   const data = await response.json();
-  localStorage.setItem('access_token', data.access);
-  localStorage.setItem('refresh_token', data.refresh);
+  if(!!data.access){
+    localStorage.setItem('access_token', data.access);
+    localStorage.setItem('refresh_token', data.refresh);
+  }
+  else localStorage.setItem('access_token', false);
+
   return data;
 };

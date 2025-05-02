@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import './HomePage.css';
 
 const HomePage = () => {
-    const isLoggedIn = localStorage.getItem('access_token');
+    const isLoggedIn = localStorage.getItem('access_token') !== 'false';
 
     return(
         <div className="home-container">

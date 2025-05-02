@@ -24,7 +24,10 @@ class UserView(generics.ListCreateAPIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):  # Żądanie POST nadpisywane z TokenObtainPairView, stąd args i kwargs
+        print(request.data)
         response = super().post(request, *args, **kwargs)
+        print(response)
+        print(request)
         email = request.data['email']  # Pobieranie loginu użytkownika z danych żadania
         print("Request data:", request.data['email'])
         print(email)
@@ -43,13 +46,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 class RegisterUser(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         users = UserModel.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)  # Zwraca listę użytkowników
 
     def post(self,request):
+        print(request.data)
         serializer = UserSerializer(data=request.data)
+
         if serializer.is_valid():
             user = serializer.save()
             return Response({"message": "User created successfully!", "user_id": user.id}, status=status.HTTP_201_CREATED)
