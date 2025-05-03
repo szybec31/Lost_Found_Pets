@@ -65,7 +65,8 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-    
+
+
 class Raports(models.Model):
     class RaportTypeChoices(models.TextChoices):
         LOST = "Lost"
@@ -81,6 +82,7 @@ class Raports(models.Model):
     date_added = models.DateTimeField(db_column="date_added")
     district = models.CharField(max_length=20,default="",db_column="district")
     description = models.CharField(max_length=300,default="",db_column="description")
+    user_id = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports", db_column="user_id")
 
 
     class Meta:

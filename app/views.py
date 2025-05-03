@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from .models import UserModel, Raports
-from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer
+from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportDetailSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
@@ -77,6 +77,19 @@ class Add_Raport(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
+
+
+class Raport_Details(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, pk):
+        try:
+            raport = Raports.objects.get(pk=pk)
+            serializer = RaportDetailSerializer(raport)
+            return Response(serializer.data)
+        except Raports.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
 
 class User_info(APIView):
     permission_classes = [IsAuthenticated]
