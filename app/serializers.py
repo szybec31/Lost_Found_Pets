@@ -53,4 +53,5 @@ class RaportWithImageSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         image = obj.images.first()  # tylko jedno zdjęcie
-        return image.image.url if image else None
+        #return image.image.url if image else None
+        return [image.image.url for image in obj.images.all()[:3]]

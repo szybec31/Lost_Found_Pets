@@ -107,3 +107,18 @@ class RaportsWithOneImageView(generics.ListAPIView):
 
     def get_queryset(self):
         return Raports.objects.annotate(image_count=Count('images')).filter(image_count__gte=1).prefetch_related('images').order_by('-date_added')
+    
+class RaportsFiltered(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = RaportWithImageSerializer
+
+    def get_queryset(self):
+        queryset = Raports.objects.annotate(image_count=Count('images')).filter(image_count__gte=1).prefetch_related('images').order_by('-date_added')
+        raport_type = self.request.query_params.get('raport_type')  #Lost/Found
+        animal_type = self.request.query_params.get('animal_type')  #Cat/Dog
+
+        if raport_type:
+            queryset = queryset.filter(raport_type=raport_type)
+        if animal_type:
+            queryset = queryset.filter(animal_type=animal_type)
+        return queryset
