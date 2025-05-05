@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from .models import UserModel, Raports
-from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportWithMultipleImagesSerializer
+from .serializers import UserSerializer, Add_Raport_Serializer, RaportDetailSerializer, RaportWithImageSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
@@ -78,6 +78,19 @@ class Add_Raport(APIView):
         else:
             return Response(serializer.errors)
 
+
+class Raport_Details(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, pk):
+        try:
+            raport = Raports.objects.get(pk=pk)
+            serializer = RaportDetailSerializer(raport)
+            return Response(serializer.data)
+        except Raports.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+
 class User_info(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):  # Żądanie GET
@@ -108,7 +121,6 @@ class RaportsWithOneImageView(generics.ListAPIView):
     def get_queryset(self):
         return Raports.objects.annotate(image_count=Count('images')).filter(image_count__gte=1).prefetch_related('images').order_by('-date_added')
 
-'''
 class RaportsFiltered(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = RaportWithImageSerializer
@@ -123,4 +135,3 @@ class RaportsFiltered(generics.ListAPIView):
         if animal_type:
             queryset = queryset.filter(animal_type=animal_type)
         return queryset
-'''
