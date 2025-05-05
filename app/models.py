@@ -10,7 +10,7 @@ from .managers import UserManager
 #phone number validator
 phone_validator = RegexValidator(
     regex=r'^\d{9}$',
-    message="Enter a valid phone number with country code (e.g., 123456789).",
+    message="Enter a valid phone number (e.g., 123456789).",
 )
 # model Admina
 class CustomUserManager(BaseUserManager):
@@ -48,12 +48,12 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True,db_column='email')
     phone = models.CharField(max_length=9, validators=[phone_validator],db_column='phone_number')
     first_name = models.CharField(max_length=30,db_column='first_name')
+    last_name = models.CharField(max_length=30,db_column='last_name')
     is_superuser = models.IntegerField(default=0,db_column='is_superuser')
     is_staff = models.IntegerField(default=0,db_column='is_staff')
     is_active = models.IntegerField(default=1,db_column='is_active')
-    last_name = models.CharField(max_length=30,db_column='last_name')
-    last_login = models.DateTimeField(db_column='last_login')
-    date_joined = models.DateTimeField(db_column='date_joined')
+    last_login = models.DateTimeField(db_column='last_login', default=now)
+    date_joined = models.DateTimeField(db_column='date_joined', default=now)
 
     objects = CustomUserManager()
 
