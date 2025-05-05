@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from .models import UserModel, Raports
-from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer
+from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportWithMultipleImagesSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
@@ -107,7 +107,8 @@ class RaportsWithOneImageView(generics.ListAPIView):
 
     def get_queryset(self):
         return Raports.objects.annotate(image_count=Count('images')).filter(image_count__gte=1).prefetch_related('images').order_by('-date_added')
-    
+
+'''
 class RaportsFiltered(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = RaportWithImageSerializer
@@ -122,3 +123,4 @@ class RaportsFiltered(generics.ListAPIView):
         if animal_type:
             queryset = queryset.filter(animal_type=animal_type)
         return queryset
+'''

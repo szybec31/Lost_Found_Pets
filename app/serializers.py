@@ -53,5 +53,15 @@ class RaportWithImageSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         image = obj.images.first()  # tylko jedno zdjęcie
-        #return image.image.url if image else None
+        return image.image.url if image else None
+    
+class RaportWithMultipleImagesSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Raports
+        fields = ['id', 'raport_type', 'animal_type', 'date_added', 'image']
+
+    def get_image(self, obj):
+        image = obj.images.first()  #kilka zdjęć
         return [image.image.url for image in obj.images.all()[:3]]
