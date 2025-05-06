@@ -35,7 +35,7 @@ const LoginSignUp = () => {
         await login(formData.email, formData.password);
       }
         console.log(formData)
-      //navigate('/'); // Przekierowanie po udanej autentykacji
+      //navigate('/'); // Przekierowanie po udanej autentyfikacji
     } catch (error) {
       console.error('Error:', error);
       alert(action === "Sign Up" ? 'Registration failed' : 'Login failed');

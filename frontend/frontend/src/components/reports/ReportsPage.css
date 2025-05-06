@@ -1,0 +1,28 @@
+.reports-container {
+    padding: 2rem;
+  }
+  
+  .filter-buttons {
+    margin-bottom: 1rem;
+  }
+  
+  .filter-buttons button {
+    margin-right: 1rem;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  
+  .reports-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .report-card {
+    width: 250px;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  

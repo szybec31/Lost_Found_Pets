@@ -1,0 +1,33 @@
+.ai-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .ai-container h1 {
+    color: #022216;
+    margin-bottom: 1rem;
+  }
+  
+  .ai-container ul {
+    padding-left: 1.2rem;
+  }
+  
+  .ai-container li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .ai-restricted {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .login-button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  
