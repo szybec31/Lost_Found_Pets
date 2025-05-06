@@ -1,31 +1,43 @@
 import './App.css';
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginSignUp from './components/login/LoginSignUp';
+import HomePage from './pages/HomePage';
 import AddLostAnimal from './components/form/AddLostAnimal';
 import UserProfile from './components/user/UserProfile'; 
+import AiModelInfo from './components/AI/AiModelInfo';
+import ReportsPage from './components/reports/ReportsPage'; 
+import ProtectedRoute from './components/login/ProtectedRoute';
 
-  function App() {
-    return (
-      <div className="App">
-       <Router>
-        //dla weryfikacji poprawności działania
-        <nav>
-          <Link to="/">Home</Link> | 
-          <Link to="/add">Dodaj zwierzę</Link> | 
-          <Link to="/profile">Profil</Link>
-        </nav>
-
+function App() {
+  return (
+    <div className="App">
+      <Router>
         <Routes>
-          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginSignUp />} />
-          <Route path="/add" element={<AddLostAnimal />} />
-          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/ai-model" element={<AiModelInfo />} /> {/* Dostępna dla wszystkich */}
+          <Route path="/reports" element={<ReportsPage />} />   {/* Dostępna dla wszystkich */}
+          <Route
+            path="/add"
+            element={
+              <ProtectedRoute>
+                <AddLostAnimal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
-      </div>
-    );
-  }
+    </div>
+  );
+}
 
 export default App;

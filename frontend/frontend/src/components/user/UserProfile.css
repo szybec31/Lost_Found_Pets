@@ -21,3 +21,53 @@
     font-size: 1.1rem;
   }
   
+  .password-change-form {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f7f7f7;
+    border-radius: 8px;
+  }
+  
+  .password-change-form h3 {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .success-message {
+    color: green;
+    margin-top: 1rem;
+  }
+  
+  .error-message {
+    color: red;
+    margin-top: 1rem;
+  }
+  
+  .password-change-form button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .password-change-form button:hover {
+    background-color: #0056b3;
+  }
+  
