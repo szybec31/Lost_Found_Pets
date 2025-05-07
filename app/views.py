@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
-from .models import UserModel, Raports
-from .serializers import UserSerializer, Add_Raport_Serializer, RaportDetailSerializer, RaportWithImageSerializer
+from .models import UserModel, Raports, Images
+from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportDetailSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .ai import *
+import faiss
 
 
 
@@ -44,7 +46,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         return response
 
-
 class RegisterUser(APIView):
     permission_classes = [AllowAny]
 
@@ -65,15 +66,19 @@ class RegisterUser(APIView):
 class Add_Raport(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self,request):
+    def post(self, request):
         data = request.data
         data['date_added'] = datetime.now()
-        print(request.user.id)
-        data['user_id'] = request.user.id
-        print(data)
+        data['user_id'] = request.user.id if request.user.is_authenticated else None
+
         serializer = Add_Raport_Serializer(data=data)
+
         if serializer.is_valid():
-            serializer.save()  # Zapis raportu w bazie danych
+            report = serializer.save()
+
+            for image in report.images.all():
+                self.compare_features(image)
+
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
@@ -118,10 +123,8 @@ class Add_Raport(APIView):
         else:
             print("Brak podobnych obrazów dla obrazu ID:", new_image.id)
 
-
-
 class Raport_Details(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         try:
             raport = Raports.objects.get(pk=pk)
@@ -151,7 +154,6 @@ class User_info(APIView):
         user.set_password(new_password)
         user.save()
         return Response({"detail": "Password has been changed."}, status=status.HTTP_200_OK)
-
 
 class RaportsWithOneImageView(generics.ListAPIView):
     permission_classes = [AllowAny]
