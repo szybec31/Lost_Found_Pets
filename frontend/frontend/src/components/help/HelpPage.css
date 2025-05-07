@@ -1,0 +1,35 @@
+.help-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #f7f9fa;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .help-container h1 {
+    font-size: 28px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .help-container section {
+    margin-bottom: 2rem;
+  }
+  
+  .help-container h2 {
+    color: #1f9668;
+    font-size: 20px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .help-container ul {
+    padding-left: 1.2rem;
+    list-style-type: disc;
+  }
+  
+  .footer-note {
+    margin-top: 2rem;
+    font-style: italic;
+    color: #555;
+  }
+  

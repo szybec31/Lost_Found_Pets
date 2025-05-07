@@ -36,3 +36,21 @@
     transform: rotate(360deg);
   }
 }
+
+.main-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1f9668;
+  padding: 10px 20px;
+  color: white;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.main-navbar button {
+  color: white;
+}
