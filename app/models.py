@@ -126,6 +126,7 @@ class Images(models.Model):
     image = models.ImageField(upload_to=numbered_upload_path,db_column='image')
     #image_attributes = models.FileField(upload_to="IMG_Database", validators=[FileExtensionValidator(["csv"])])
     raport = models.ForeignKey(Raports, on_delete=models.CASCADE, related_name="images",db_column='raport_id')
+    features = models.TextField(null=True, blank=True)  # wektor cech
 
     class Meta:
         verbose_name = "Image"
