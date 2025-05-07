@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
-from .models import UserModel, Raports
-from .serializers import UserSerializer, Add_Raport_Serializer, RaportDetailSerializer, RaportWithImageSerializer
+from .models import UserModel, Raports, Images
+from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportDetailSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .ai import *
+import faiss
 
 
 
@@ -65,22 +67,67 @@ class RegisterUser(APIView):
 class Add_Raport(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self,request):
+    def post(self, request):
         data = request.data
         data['date_added'] = datetime.now()
-        print(request.user.id)
-        data['user_id'] = request.user.id
-        print(data)
+        data['user_id'] = request.user.id if request.user.is_authenticated else None
+
         serializer = Add_Raport_Serializer(data=data)
+
         if serializer.is_valid():
-            serializer.save()  # Zapis raportu w bazie danych
+            report = serializer.save()
+
+            for image in report.images.all():
+                self.compare_features(image)
+
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
 
+    def compare_features(self, new_image):
+        # Pobieranie wszystkich wektorów cech z bazy danych oprócz tego z nowego zdjęcia i tych, co nie mają wektorów
+        existing_images = Images.objects.exclude(id=new_image.id).exclude(features__isnull=True)
+        if not existing_images.exists():  # Przypadek, kiedy baza jest pusta
+            print("Brak obrazów w bazie do porównania.")
+            return
+
+        features_list = []
+        image_paths = []
+
+        for img in existing_images:
+            features = np.fromstring(img.features, sep=',')
+            features_list.append(features)
+            image_paths.append(img.image.url)
+
+        # Inicjalizujemy FAISS
+        dimension = 1280  # Długość wektora cech MobileNetV2
+        index = faiss.IndexFlatL2(dimension)
+
+        features_array = np.array(features_list, dtype=np.float32)
+        index.add(features_array)
+
+        # Przygotowujemy wektor cech nowego obrazu
+        new_features = np.fromstring(new_image.features, sep=',').reshape(1, -1)
+        distances, indices = index.search(new_features, 3)  # Top 3 podobne obrazy
+
+        similar_images = []
+
+        for idx in range(len(indices[0])):
+            image_path = image_paths[indices[0][idx]]
+            distance = distances[0][idx]
+            similar_images.append((image_path, distance))
+
+        if similar_images:
+            print("Podobne obrazy dla obrazu ID:", new_image.id)
+            for img_path, distance in similar_images:
+                print(f"Obraz: {img_path}, Odległość: {distance:.4f}")
+        else:
+            print("Brak podobnych obrazów dla obrazu ID:", new_image.id)
+
+
 
 class Raport_Details(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         try:
             raport = Raports.objects.get(pk=pk)

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import UserModel, Raports, Images
+from .ai import extract_features
 
 
 # Serializer od użytkownika
@@ -46,7 +47,16 @@ class Add_Raport_Serializer(serializers.ModelSerializer):
         raport = Raports.objects.create(**validated_data)
 
         for image in uploaded_images:
-            Images.objects.create(raport=raport, image=image)
+            # Images.objects.create(raport=raport, image=image)
+            temp_instance = Images(raport=raport, image=image)
+            temp_instance.save()
+
+            image_path = temp_instance.image.path
+            features = extract_features(image_path)
+            features_str = ",".join(map(str, features))
+
+            temp_instance.features = features_str
+            temp_instance.save()
 
         return raport
 
