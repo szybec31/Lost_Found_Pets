@@ -46,7 +46,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         return response
 
-
 class RegisterUser(APIView):
     permission_classes = [AllowAny]
 
@@ -124,8 +123,6 @@ class Add_Raport(APIView):
         else:
             print("Brak podobnych obrazów dla obrazu ID:", new_image.id)
 
-
-
 class Raport_Details(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, pk):
@@ -135,8 +132,6 @@ class Raport_Details(APIView):
             return Response(serializer.data)
         except Raports.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-
 
 class User_info(APIView):
     permission_classes = [IsAuthenticated]
@@ -160,7 +155,6 @@ class User_info(APIView):
         user.save()
         return Response({"detail": "Password has been changed."}, status=status.HTTP_200_OK)
 
-
 class RaportsWithOneImageView(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = RaportWithImageSerializer
@@ -182,3 +176,38 @@ class RaportsFiltered(generics.ListAPIView):
         if animal_type:
             queryset = queryset.filter(animal_type=animal_type)
         return queryset
+    
+class UserRaportsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        raports = Raports.objects.filter(user_id=user.id)
+        serializer = RaportDetailSerializer(raports, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UserRaportDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            raport = Raports.objects.get(pk=pk, user_id=request.user.id)
+            serializer = RaportDetailSerializer(raport)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Raports.DoesNotExist:
+            return Response({"detail": "Raport not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
+        
+class UpdateUserRaportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            raport = Raports.objects.get(pk=pk, user_id=request.user.id)
+        except Raports.DoesNotExist:
+            return Response({"detail": "Raport not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = Add_Raport_Serializer(raport, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
