@@ -16,12 +16,13 @@ const HomePage = () => {
 
       <header className="home-header">
         <h1>Lost Found Pets</h1>
-        <p>Znajdź swojego pupila lub pomóż odnaleźć czyjegoś</p>
+        <p></p>
       </header>
 
       <main className="home-main">
         <section className="home-welcome">
           <h2>Witamy w LostFoundPets!</h2>
+          <h3>Znajdź swojego pupila lub pomóż odnaleźć czyjegoś</h3>
           <p>
             To platforma umożliwiająca szybkie zgłaszanie zaginionych lub znalezionych zwierząt.
             Nasz system wykorzystuje sztuczną inteligencję do analizy zdjęć i porównywania zgłoszeń.
@@ -31,7 +32,7 @@ const HomePage = () => {
         <section className="home-actions">
           <div className="action-card">
             <h3>Przeglądaj zgłoszenia</h3>
-            <p>Sprawdź, czy ktoś już dodał podobne zgłoszenie.</p>
+            <p>Sprawdź, czy ktoś dodał już podobne zgłoszenie.</p>
             <Link to="/reports" className="action-button">Zobacz</Link>
           </div>
 
