@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from app.views import UserView, RegisterUser, CustomTokenObtainPairView, Add_Raport, User_info, RaportsWithOneImageView, Raport_Details, RaportsFiltered
+from app.views import UserView, RegisterUser, CustomTokenObtainPairView, Add_Raport, User_info, RaportsWithOneImageView, Raport_Details, RaportsFiltered, UserRaportsView, UserRaportDetailView, UpdateUserRaportView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,7 +31,10 @@ urlpatterns = [
     path("change_password/", User_info.as_view(), name="changePass"),
     path('raports/', RaportsWithOneImageView.as_view(), name='raports'),
     path('raport_details/<int:pk>/', Raport_Details.as_view(), name='raport-detail'),
-    path('raports-filtered/', RaportsFiltered.as_view(), name='raports_filtered')
+    path('raports-filtered/', RaportsFiltered.as_view(), name='raports_filtered'),
+    path('user_raports/', UserRaportsView.as_view(), name='user_raports'),
+    path('user_raport/<int:pk>/', UserRaportDetailView.as_view(), name='user_raport_detail'),
+    path('update_user_raport/<int:pk>/', UpdateUserRaportView.as_view(), name='update_user_raport')
     ]
 
 if settings.DEBUG:
