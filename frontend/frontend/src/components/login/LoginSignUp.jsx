@@ -8,7 +8,7 @@ import email_icon from '../assets/email.png'
 import password_icon from '../assets/password.png'
 
 const LoginSignUp = () => {
-  const [action, setAction] = useState("Sign Up");
+  const [action, setAction] = useState("Login");
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,17 +29,20 @@ const LoginSignUp = () => {
     try {
       if (action === "Sign Up") {
         await registerUser(formData);
-        // Po rejestracji automatyczne logowanie
         await login(formData.email, formData.password);
       } else {
         await login(formData.email, formData.password);
       }
-        console.log(formData)
-      //navigate('/'); // Przekierowanie po udanej autentyfikacji
+      console.log(formData);
+      navigate('/');
     } catch (error) {
       console.error('Error:', error);
       alert(action === "Sign Up" ? 'Registration failed' : 'Login failed');
     }
+  };
+
+  const toggleAction = () => {
+    setAction(prev => prev === "Login" ? "Sign Up" : "Login");
   };
 
   return (
@@ -50,35 +53,37 @@ const LoginSignUp = () => {
         <div className="underline"></div>
       </div>
       <div className="inputs">
-        {action==="Login"?<div></div>:<>
-          <div className="input">
-            <img src={user_icon} alt="" />
-            <input 
-              type="text" 
-              name="first_name"
-              placeholder='First Name' 
-              onChange={handleChange}
-            />
-          </div>
-          <div className="input">
-            <img src={user_icon} alt="" />
-            <input 
-              type="text" 
-              name="last_name"
-              placeholder='Last Name' 
-              onChange={handleChange}
-            />
-          </div>
-          <div className="input">
-            <img src={user_icon} alt="" />
-            <input 
-              type="text" 
-              name="phone"
-              placeholder='Phone' 
-              onChange={handleChange}
-            />
-          </div>
-        </>}        
+        {action === "Sign Up" && (
+          <>
+            <div className="input">
+              <img src={user_icon} alt="" />
+              <input 
+                type="text" 
+                name="first_name"
+                placeholder='First Name' 
+                onChange={handleChange}
+              />
+            </div>
+            <div className="input">
+              <img src={user_icon} alt="" />
+              <input 
+                type="text" 
+                name="last_name"
+                placeholder='Last Name' 
+                onChange={handleChange}
+              />
+            </div>
+            <div className="input">
+              <img src={user_icon} alt="" />
+              <input 
+                type="text" 
+                name="phone"
+                placeholder='Phone' 
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}        
         <div className="input">
           <img src={email_icon} alt="" />
           <input 
@@ -86,6 +91,7 @@ const LoginSignUp = () => {
             name="email"
             placeholder='Email' 
             onChange={handleChange}
+            required
           />
         </div>
         <div className="input">
@@ -95,30 +101,32 @@ const LoginSignUp = () => {
             name="password"
             placeholder='Password' 
             onChange={handleChange}
+            required
           />
         </div>
       </div>
-      {action==="Sign Up"?<div></div>:<div className="forgot-password">Forgot Password?<span> Click Here</span></div>}
-      <div className="submit-container">
-        <div 
-          className={action==="Login"?"submit gray":"submit"} 
-          onClick={()=>{setAction("Sign Up")}}
-        >
-          Sign Up
+      
+      {action === "Login" && (
+        <div className="forgot-password">
+          Forgot Password?<span> Click Here</span>
         </div>
-        <div 
-          className={action==="Sign Up"?"submit gray":"submit"} 
-          onClick={()=>{setAction("Login")}}
-        >
-          Login
-        </div>
-      </div>
+      )}
+      
       <div 
         className="submit" 
         style={{ margin: '20px auto', width: '480px' }}
         onClick={handleSubmit}
       >
         {action === "Login" ? "Login" : "Sign Up"}
+      </div>
+      
+      <div className="toggle-action">
+        {action === "Login" 
+          ? "Don't have an account? " 
+          : "Already have an account? "}
+        <span onClick={toggleAction}>
+          {action === "Login" ? "Sign Up" : "Login"}
+        </span>
       </div>
     </div>
   );

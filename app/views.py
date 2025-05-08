@@ -69,59 +69,64 @@ class Add_Raport(APIView):
     def post(self, request):
         data = request.data
         data['date_added'] = datetime.now()
-        data['user_id'] = request.user.id if request.user.is_authenticated else None
+        data['user_id'] = request.user.id if request.user.is_authenticated else None  # Ustawianie ID użytkownika
 
         serializer = Add_Raport_Serializer(data=data)
 
         if serializer.is_valid():
-            report = serializer.save()
+            report = serializer.save()  # Zapisywanie raportu w bazie
 
+            # Każdy dodany obraz do bazy jest od razu porównywany za pomocą jego wektora cech
             for image in report.images.all():
                 self.compare_features(image)
 
-            return Response(serializer.data)
+            return Response(serializer.data)  # Zwracanie zapisanych danych
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors)  # Zwracanie błędów walidacji
 
     def compare_features(self, new_image):
-        # Pobieranie wszystkich wektorów cech z bazy danych oprócz tego z nowego zdjęcia i tych, co nie mają wektorów
-        existing_images = Images.objects.exclude(id=new_image.id).exclude(features__isnull=True)
+        # Pobieranie wszystkich wektorów cech z bazy danych oprócz tego z nowego zdjęcia
+        existing_images = Images.objects.exclude(id=new_image.id)
+
         if not existing_images.exists():  # Przypadek, kiedy baza jest pusta
             print("Brak obrazów w bazie do porównania.")
             return
 
-        features_list = []
-        image_paths = []
+        features_list = []  # Lista do przechowywania wektorów cech
+        image_paths = []   # Lista do przechowywania ścieżek obrazów
 
         for img in existing_images:
+            # Wczytywanie wektora cech przechowywanego oryginalnie jako tekst do tablicy numpy
             features = np.fromstring(img.features, sep=',')
             features_list.append(features)
             image_paths.append(img.image.url)
 
-        # Inicjalizujemy FAISS
+        # Inicjalizacja FAISS dla porównywania wektorów cech
         dimension = 1280  # Długość wektora cech MobileNetV2
         index = faiss.IndexFlatL2(dimension)
 
+        # Dodanie wektorów cech z bazy do indeksu FAISS
         features_array = np.array(features_list, dtype=np.float32)
         index.add(features_array)
 
-        # Przygotowujemy wektor cech nowego obrazu
+        # Przygotowanie wektora cech nowego obrazu
         new_features = np.fromstring(new_image.features, sep=',').reshape(1, -1)
-        distances, indices = index.search(new_features, 3)  # Top 3 podobne obrazy
+        distances, indices = index.search(new_features, 3) # Wyszukiwanie trzech najbardziej podobnych obrazów
+        # (im mniejsza odległość, tym bardziej podobne)
 
-        similar_images = []
+        similar_images = []  # Lista do przechowywania wyników podobnych obrazów
 
         for idx in range(len(indices[0])):
-            image_path = image_paths[indices[0][idx]]
-            distance = distances[0][idx]
+            image_path = image_paths[indices[0][idx]]  # Pobieranie ścieżki obrazu
+            distance = distances[0][idx]  # Pobieranie odległości
             similar_images.append((image_path, distance))
 
-        if similar_images:
-            print("Podobne obrazy dla obrazu ID:", new_image.id)
+        if similar_images:  # Jeśli znaleziono podobne obrazy
+            print("Podobne obrazy dla nowo-dodanego obrazu o ID: ", new_image.id)
             for img_path, distance in similar_images:
                 print(f"Obraz: {img_path}, Odległość: {distance:.4f}")
         else:
-            print("Brak podobnych obrazów dla obrazu ID:", new_image.id)
+            print("Brak podobnych obrazów dla nowo-dodanego obrazu o ID: ", new_image.id)
 
 class Raport_Details(APIView):
     permission_classes = [IsAuthenticated]
