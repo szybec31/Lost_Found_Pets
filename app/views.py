@@ -95,54 +95,10 @@ class Add_Raport(APIView):
         serializer = Add_Raport_Serializer(data=data)
 
         if serializer.is_valid():
-            raport = serializer.save()
-
-            for image in raport.images.all():
-                self.compare_features(image)
-
-            return Response(serializer.data)
+            serializer.save()
+            return Response(serializer.data)  # Zwracanie zapisanych danych
         else:
-            return Response(serializer.errors)
-
-    def compare_features(self, new_image):
-        # Pobieranie wszystkich wektorów cech z bazy danych oprócz tego z nowego zdjęcia i tych, co nie mają wektorów
-        existing_images = Images.objects.exclude(id=new_image.id).exclude(features__isnull=True)
-        if not existing_images.exists():  # Przypadek, kiedy baza jest pusta
-            print("Brak obrazów w bazie do porównania.")
-            return
-
-        features_list = []
-        image_paths = []
-
-        for img in existing_images:
-            features = np.fromstring(img.features, sep=',')
-            features_list.append(features)
-            image_paths.append(img.image.url)
-
-        # Inicjalizujemy FAISS
-        dimension = 1280  # Długość wektora cech MobileNetV2
-        index = faiss.IndexFlatL2(dimension)
-
-        features_array = np.array(features_list, dtype=np.float32)
-        index.add(features_array)
-
-        # Przygotowujemy wektor cech nowego obrazu
-        new_features = np.fromstring(new_image.features, sep=',').reshape(1, -1)
-        distances, indices = index.search(new_features, 3)  # Top 3 podobne obrazy
-
-        similar_images = []
-
-        for idx in range(len(indices[0])):
-            image_path = image_paths[indices[0][idx]]
-            distance = distances[0][idx]
-            similar_images.append((image_path, distance))
-
-        if similar_images:
-            print("Podobne obrazy dla obrazu ID:", new_image.id)
-            for img_path, distance in similar_images:
-                print(f"Obraz: {img_path}, Odległość: {distance:.4f}")
-        else:
-            print("Brak podobnych obrazów dla obrazu ID:", new_image.id)
+            return Response(serializer.errors)  # Zwracanie błędów walidacji
 
 class Raport_Details(APIView):
     permission_classes = [IsAuthenticated]
@@ -219,6 +175,7 @@ class RaportsFiltered(generics.ListAPIView):
         raport_type = self.request.query_params.get('raport_type')  #Lost/Found
         animal_type = self.request.query_params.get('animal_type')  #Cat/Dog
 
+
         if raport_type:
             queryset = queryset.filter(raport_type=raport_type)
         if animal_type:
@@ -241,10 +198,97 @@ class UserRaportDetailView(APIView):
         try:
             raport = Raports.objects.get(pk=pk, user_id=request.user.id)
             serializer = RaportDetailSerializer(raport)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # Sprawdzenie, czy użytkownik chce porównać obrazy
+            compare_images = request.query_params.get('compare', 'false').lower() == 'true'
+            comparison_results = []
+
+            if compare_images:
+                # Wykonaj porównanie tylko raz, dla całego zgłoszenia
+                similar_images = self.compare_features(raport, raport.animal_type)
+                comparison_results = similar_images  # bez opakowania w "image": ...
+
+            response_data = serializer.data
+            if comparison_results:
+                response_data['comparison_results'] = comparison_results
+
+            return Response(response_data, status=status.HTTP_200_OK)
         except Raports.DoesNotExist:
             return Response({"detail": "Raport not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+    def compare_features(self, raport, animal_type):
+        target_raport_type = 'Lost' if raport.raport_type == 'Found' else 'Found'
+
+        existing_images = Images.objects.filter(
+            raport__raport_type=target_raport_type,
+            raport__animal_type=animal_type
+        ).select_related('raport')
+
+        if not existing_images.exists():
+            return [{"detail": "Brak obrazów w bazie do porównania."}]
+
+        user_features_list = []
+        for img in raport.images.all():
+            if img.features:
+                features = np.fromstring(img.features, sep=',')
+                if features.size:
+                    user_features_list.append(features)
+
+        if not user_features_list:
+            return [{"detail": "Brak prawidłowych wektorów cech w zgłoszeniu użytkownika."}]
+
+        features_list = []
+        image_data = []
+        for img in existing_images:
+            if img.features:
+                features = np.fromstring(img.features, sep=',')
+                if features.size:
+                    features_list.append(features)
+                    image_data.append({
+                        "id": img.raport.id,
+                        "raport_type": img.raport.raport_type,
+                        "animal_type": img.raport.animal_type,
+                        "date_added": img.raport.date_added.isoformat(),
+                        "image": img.image.url,
+                        "raport_id": img.raport.id
+                    })
+
+        if not features_list:
+            return [{"detail": "Brak prawidłowych wektorów cech do porównania."}]
+
+        dimension = 1280
+        index = faiss.IndexFlatL2(dimension)
+        features_array = np.array(features_list, dtype=np.float32)
+        index.add(features_array)
+
+        # Oblicz dystanse do WSZYSTKICH obrazów dla KAŻDEGO wektora użytkownika
+        user_features_array = np.array(user_features_list, dtype=np.float32)
+        distances_matrix, indices_matrix = index.search(user_features_array, len(features_list))
+
+        raport_scores = {}
+
+        # Sumuj najlepsze (najmniejsze) odległości per raport_id
+        for user_idx in range(len(user_features_list)):
+            for i in range(len(indices_matrix[user_idx])):
+                idx = indices_matrix[user_idx][i]
+                distance = distances_matrix[user_idx][i]
+                img_data = image_data[idx]
+                raport_id = img_data['raport_id']
+
+                if raport_id not in raport_scores or distance < raport_scores[raport_id]['distance']:
+                    raport_scores[raport_id] = {
+                        "id": img_data['id'],
+                        "raport_type": img_data['raport_type'],
+                        "animal_type": img_data['animal_type'],
+                        "date_added": img_data['date_added'],
+                        "image": img_data['image'],
+                        "distance": float(distance)
+                    }
+
+        # Zwróć tylko 3 najlepsze dopasowania — bez podziału na zdjęcia użytkownika
+        sorted_raports = sorted(raport_scores.values(), key=lambda x: x['distance'])[:3]
+        return sorted_raports
+
 class UpdateUserRaportView(APIView):
     permission_classes = [IsAuthenticated]
 
