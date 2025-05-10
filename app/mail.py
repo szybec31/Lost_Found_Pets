@@ -46,7 +46,7 @@ def verify_code_mail(reciver,code):
 
     print("E-mail wysłany!")
 
-def custom_mail(sender,sender_name,reciver, message):
+def custom_mail(sender,sender_name,reciver, message, raport):
     print(reciver)
     sender_email = sender_em
     app_password = app_key  # Wygenerowane hasło aplikacji
@@ -55,13 +55,13 @@ def custom_mail(sender,sender_name,reciver, message):
     html_content = f"""
 <html>
   <body style="font-family: Arial, sans-serif; color: #333;">
-    <h2 style="color: #007BFF;">Nowa wiadomość dotycząca zgłoszenia</h2>
+    <h2 style="color: #007BFF;">Nowa wiadomość dotycząca zgłoszenia nr. {raport}</h2>
     <p><b>Od:</b> {sender_name} ({sender})</p>
     <p><b>Do:</b> {reciver}</p>
     <hr>
     <p>{message}</p>
     <br>
-    <p style="font-size: 12px; color: gray;">Wiadomość wysłana ze strony Lost and Found Pets.</p>
+    <p style="font-size: 12px; color: gray;">Wiadomość wysłana ze strony <a href=" http://127.0.0.1:3000/login">Lost and Found Pets</a>. </p>
   </body>
 </html>
 """
