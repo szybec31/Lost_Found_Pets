@@ -19,7 +19,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from app.views import UserView, RegisterUser, CustomTokenObtainPairView, Add_Raport, User_info, RaportsWithOneImageView, Raport_Details, RaportsFiltered, UserRaportsView, UserRaportDetailView, UpdateUserRaportView
+from app.views import (UserView, RegisterUser, CustomTokenObtainPairView, Add_Raport, User_info, RaportsWithOneImageView,
+                       Raport_Details, RaportsFiltered, UserRaportsView, UserRaportDetailView, UpdateUserRaportView, Confirm2FACodeView, SendRaportEmailView)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,7 +35,9 @@ urlpatterns = [
     path('raports-filtered/', RaportsFiltered.as_view(), name='raports_filtered'),
     path('user_raports/', UserRaportsView.as_view(), name='user_raports'),
     path('user_raport/<int:pk>/', UserRaportDetailView.as_view(), name='user_raport_detail'),
-    path('update_user_raport/<int:pk>/', UpdateUserRaportView.as_view(), name='update_user_raport')
+    path('update_user_raport/<int:pk>/', UpdateUserRaportView.as_view(), name='update_user_raport'),
+    path('confirm-code/', Confirm2FACodeView.as_view(), name='confirm_2fa_code'),
+    path('raport_details/<int:pk>/send_email/', SendRaportEmailView.as_view(), name='send_mail')
     ]
 
 if settings.DEBUG:

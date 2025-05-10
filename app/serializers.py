@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import UserModel, Raports, Images
 from .ai import extract_features
-
+from datetime import date, datetime
 
 # Serializer od użytkownika
 class UserSerializer(serializers.ModelSerializer):
@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             phone=validated_data['phone'],
             first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
+            last_name=validated_data['last_name'],
         )
         return user
 
@@ -41,6 +41,11 @@ class Add_Raport_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Raports
         fields = ['id','user_id','raport_type','animal_type','date_added','district','description','images', 'uploaded_images']
+
+    def validate_uploaded_images(self, value):
+        if len(value) > 3:
+            raise serializers.ValidationError("Można dodać maksymalnie 3 zdjęcia.")
+        return value
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])

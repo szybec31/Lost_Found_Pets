@@ -1,18 +1,19 @@
-from datetime import date, datetime
-
+from django.utils.timezone import now
 from django.db.models import Count
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, user_logged_in
 from .models import UserModel, Raports, Images
 from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportDetailSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .ai import *
 import faiss
-
-
+from django.core.cache import cache
+from .mail import verify_code_mail, custom_mail
+from .Generator import generate_verify_code
 
 # Create your views here.
 
@@ -26,25 +27,45 @@ class UserView(generics.ListCreateAPIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
 
     def post(self, request, *args, **kwargs):  # Żądanie POST nadpisywane z TokenObtainPairView, stąd args i kwargs
-        print(request.data)
-        response = super().post(request, *args, **kwargs)
-        print(response)
-        print(request)
-        email = request.data['email']  # Pobieranie loginu użytkownika z danych żadania
-        print("Request data:", request.data['email'])
-        print(email)
-        if email:
-            # Pobierz model użytkownika na podstawie nazwy użytkownika
-            User = get_user_model()
-            try:
-                user = User.objects.get(email=email)  # Szukanie użytkownika na podstawie jego loginu
-                # Aktualizuj last_login
-                user.last_login = date.today()
-                user.save()  # Zapisywanie zmian w bazie danych
-            except User.DoesNotExist:
-                pass
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-        return response
+        user = get_user_model().objects.filter(email=email).first()
+        if user and user.check_password(password):
+            # Wygeneruj kod weryfikacyjny
+            code = "11" #generate_verify_code() # Tymczasowo wyłączony  !!!!
+
+            # Przechowuj kod (np. cache z 5-minutowym TTL)
+            cache.set(f"2fa_code_user_{code}", email, timeout=300)
+
+            # Wyślij kod na email
+            #verify_code_mail(email,code)               # Tymczasowo wyłączony  !!!!
+            print(code)
+            print("-----------")
+            return Response({"detail": "Kod weryfikacyjny wysłany na email."}, status=status.HTTP_200_OK)
+
+        return Response({"detail": "Nieprawidłowy email lub hasło."}, status=status.HTTP_401_UNAUTHORIZED)
+
+class Confirm2FACodeView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        code = request.data.get("code")
+        email = cache.get(f"2fa_code_user_{code}")
+        print(code, email)
+
+        if not email:
+            return Response({"detail": "Kod nieprawidłowy lub wygasł."}, status=400)
+
+        user = get_user_model().objects.get(email=email)
+        refresh = RefreshToken.for_user(user)
+        user.last_login = now()
+        user.save()  # Zapisywanie zmian w bazie danych
+        return Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        })
+
+
 
 class RegisterUser(APIView):
     permission_classes = [AllowAny]
@@ -68,7 +89,7 @@ class Add_Raport(APIView):
 
     def post(self, request):
         data = request.data
-        data['date_added'] = datetime.now()
+        data['date_added'] = now()
         data['user_id'] = request.user.id if request.user.is_authenticated else None
 
         serializer = Add_Raport_Serializer(data=data)
@@ -132,6 +153,34 @@ class Raport_Details(APIView):
             return Response(serializer.data)
         except Raports.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+class SendRaportEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        raport = Raports.objects.get(pk=pk)
+        print(raport.user_id)
+        user = raport.user_id
+        reciver = user.email
+        print(reciver)
+
+        if not reciver:
+            return Response({"error": "Użytkownik nie ma przypisanego adresu e-mail."}, status=400)
+        # Dane z frontendu
+        sender_email = request.user.email
+        sender_name = request.user.first_name
+        sender_name += request.user.last_name
+        print(sender_email, sender_name)
+        message = request.data.get("message")
+
+        if not sender_email or not sender_name or not message:
+            return Response({"error": "Brakuje wymaganych danych."}, status=400)
+
+        if sender_email.lower() == reciver.lower():
+            return Response({"error": "Nie można wysłać wiadomości do samego siebie."}, status=400)
+
+        custom_mail(sender_email,sender_name,reciver, message)
+        return Response({"detail": "Email został wysłany"}, status=status.HTTP_200_OK)
 
 class User_info(APIView):
     permission_classes = [IsAuthenticated]
