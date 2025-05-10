@@ -1,4 +1,3 @@
-from datetime import date
 from django.utils.timezone import now
 import os
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
@@ -23,8 +22,8 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('first_name', 'No Name')
         extra_fields.setdefault('last_name', 'No Name')
         extra_fields.setdefault('is_superuser', 0)
-        extra_fields.setdefault('last_login', date.today())
-        extra_fields.setdefault('date_joined', date.today())
+        extra_fields.setdefault('last_login', now())
+        extra_fields.setdefault('date_joined', now())
 
         user = self.model(email=email, **extra_fields)  # Tworzenie instancji modelu użytkownika
         user.set_password(password)  # Haszowanie hasła
@@ -82,7 +81,6 @@ class Raports(models.Model):
     date_added = models.DateTimeField(db_column="date_added")
     district = models.CharField(max_length=20,default="",db_column="district")
     description = models.CharField(max_length=300,default="",db_column="description")
-    user_id = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports", db_column="user_id")
 
 
     class Meta:
