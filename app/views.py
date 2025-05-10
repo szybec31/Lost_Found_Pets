@@ -95,9 +95,9 @@ class Add_Raport(APIView):
         serializer = Add_Raport_Serializer(data=data)
 
         if serializer.is_valid():
-            report = serializer.save()
+            raport = serializer.save()
 
-            for image in report.images.all():
+            for image in raport.images.all():
                 self.compare_features(image)
 
             return Response(serializer.data)
@@ -159,7 +159,6 @@ class SendRaportEmailView(APIView):
 
     def post(self, request, pk):
         raport = Raports.objects.get(pk=pk)
-        print(raport.user_id)
         user = raport.user_id
         reciver = user.email
         print(reciver)
@@ -179,7 +178,7 @@ class SendRaportEmailView(APIView):
         if sender_email.lower() == reciver.lower():
             return Response({"error": "Nie można wysłać wiadomości do samego siebie."}, status=400)
 
-        custom_mail(sender_email,sender_name,reciver, message)
+        custom_mail(sender_email,sender_name,reciver, message,pk)
         return Response({"detail": "Email został wysłany"}, status=status.HTTP_200_OK)
 
 class User_info(APIView):
