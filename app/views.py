@@ -16,6 +16,8 @@ from .mail import verify_code_mail, custom_mail
 from .Generator import generate_verify_code
 import threading
 import time
+import os
+from django.conf import settings
 
 # Create your views here.
 
@@ -354,9 +356,20 @@ class DelayedDeleteRaport(APIView):
         return Response({"message": "Deletion scheduled in 5 seconds."}, status=200)
 
     def delete_records(self, raport_1_id, raport_2_id, raport_link_id):
-
         time.sleep(5)
-        Images.objects.filter(raport_id__in=[raport_1_id, raport_2_id]).delete()
+        images = Images.objects.filter(raport_id__in=[raport_1_id, raport_2_id])
+        for img in images:
+            print(f"Próba usunięcia: {img.image.path}")
+            if img.image and os.path.isfile(img.image.path):
+                try:
+                    os.remove(img.image.path)
+                    print(f"Usunięto: {img.image.path}")
+                except Exception as e:
+                    print(f"Error deleting file {img.image.path}: {e}")
+            else:
+                print(f"Plik nie istnieje: {img.image.path}")
+
+        images.delete()
         Raports.objects.filter(id__in=[raport_1_id, raport_2_id]).delete()
         RaportsLink.objects.filter(id=raport_link_id).delete()
         print(f"Records for RaportsLink ID {raport_link_id} and associated data have been deleted.")
