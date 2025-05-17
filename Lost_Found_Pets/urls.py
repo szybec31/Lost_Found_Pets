@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from app.views import (UserView, RegisterUser, CustomTokenObtainPairView, Add_Raport, User_info, RaportsWithOneImageView,
-                       Raport_Details, RaportsFiltered, UserRaportsView, UserRaportDetailView, UpdateUserRaportView, Confirm2FACodeView, SendRaportEmailView, LinkRaportsView, DelayedDeleteRaport)
+                       Raport_Details, RaportsFiltered, UserRaportsView, UserRaportDetailView, UpdateUserRaportView, Confirm2FACodeView, SendRaportEmailView, LinkRaportsView)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,8 +38,7 @@ urlpatterns = [
     path('update_user_raport/<int:pk>/', UpdateUserRaportView.as_view(), name='update_user_raport'),
     path('confirm-code/', Confirm2FACodeView.as_view(), name='confirm_2fa_code'),
     path('raport_details/<int:pk>/send_email/', SendRaportEmailView.as_view(), name='send_mail'),
-    path('link-raports/', LinkRaportsView.as_view(), name='link_raports'),
-    path('delayed-delete/', DelayedDeleteRaport.as_view(), name='delayed_delete')
+    path('link-raports/', LinkRaportsView.as_view(), name='link_raports')
     ]
 
 if settings.DEBUG:
