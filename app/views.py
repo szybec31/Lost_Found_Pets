@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model, user_logged_in
-from .models import UserModel, Raports, Images
+from .models import UserModel, Raports, Images, RaportsLink
 from .serializers import UserSerializer, Add_Raport_Serializer, RaportWithImageSerializer, RaportDetailSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .ai import *
@@ -14,6 +14,8 @@ import faiss
 from django.core.cache import cache
 from .mail import verify_code_mail, custom_mail
 from .Generator import generate_verify_code
+import threading
+import time
 
 # Create your views here.
 
@@ -303,3 +305,58 @@ class UpdateUserRaportView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class LinkRaportsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        raport_id_1 = request.data.get('raport_id_1')
+        raport_id_2 = request.data.get('raport_id_2')
+#checks
+        if not raport_id_1 or not raport_id_2:
+            return Response({"error": "Both raport_id_1 and raport_id_2 are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if raport_id_1 == raport_id_2:
+            return Response({"error": "Cannot link a raport to itself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            raport_1 = Raports.objects.get(pk=raport_id_1)
+            raport_2 = Raports.objects.get(pk=raport_id_2)
+        except Raports.DoesNotExist:
+            return Response({"error": "One or both of the specified raports do not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        if RaportsLink.objects.filter(raport_link1=raport_1, raport_link2=raport_2).exists() or \
+           RaportsLink.objects.filter(raport_link1=raport_2, raport_link2=raport_1).exists():
+            return Response({"error": "This link already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+#Linking
+        RaportsLink.objects.create(raport_link1=raport_1, raport_link2=raport_2)
+        return Response({"message": "Raports linked successfully."}, status=status.HTTP_201_CREATED)
+
+class DelayedDeleteRaport(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        raport_link_id = request.data.get('raport_link_id')
+#checks
+        if not raport_link_id:
+            return Response({"error": "raport_link_id is required."}, status=400)
+
+        try:
+            raport_link = RaportsLink.objects.get(pk=raport_link_id)
+        except RaportsLink.DoesNotExist:
+            return Response({"error": "RaportsLink with the given ID does not exist."}, status=404)
+
+        raport_1_id = raport_link.raport_link1.id
+        raport_2_id = raport_link.raport_link2.id
+#delayed deletion
+        threading.Thread(target=self.delete_records, args=(raport_1_id, raport_2_id, raport_link_id)).start()
+        return Response({"message": "Deletion scheduled in 5 seconds."}, status=200)
+
+    def delete_records(self, raport_1_id, raport_2_id, raport_link_id):
+
+        time.sleep(5)
+        Images.objects.filter(raport_id__in=[raport_1_id, raport_2_id]).delete()
+        Raports.objects.filter(id__in=[raport_1_id, raport_2_id]).delete()
+        RaportsLink.objects.filter(id=raport_link_id).delete()
+        print(f"Records for RaportsLink ID {raport_link_id} and associated data have been deleted.")
