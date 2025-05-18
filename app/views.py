@@ -327,33 +327,21 @@ class LinkRaportsView(APIView):
         except Raports.DoesNotExist:
             return Response({"error": "One or both of the specified raports do not exist."}, status=status.HTTP_404_NOT_FOUND)
 
+        if raport_1.user_id != request.user:
+            return Response({"error": "You are not the creator of the raport."}, status=status.HTTP_403_FORBIDDEN)
+        
         if RaportsLink.objects.filter(raport_link1=raport_1, raport_link2=raport_2).exists():
             return Response({"error": "This link already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
 #Linking
         RaportsLink.objects.create(raport_link1=raport_1, raport_link2=raport_2)
-        self.setupDeleteFunction(raport_1)
-        return Response({"message": "Raports linked successfully."}, status=status.HTTP_201_CREATED)
+        if RaportsLink.objects.filter(raport_link1=raport_2, raport_link2=raport_1).exists():
+            threading.Thread(target=self.delete_records, args=(raport_1.id, raport_2.id)).start()
+            return Response({"message": "Raports linked and deletion scheduled."}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message": "Raports linked. Waiting for reverse link to schedule deletion."}, status=status.HTTP_201_CREATED)
 
-    def setupDeleteFunction(self, raport_link_id):
-        if not raport_link_id:
-            return Response({"error": "raport_link_id is required."}, status=400)
-
-        try:
-            raport_link1 = RaportsLink.objects.get(raport_link1=raport_link_id)
-        except RaportsLink.DoesNotExist:
-            return Response({"error": "RaportsLink with the given ID does not exist."}, status=404)
-
-        try:
-            raport_link2 = RaportsLink.objects.get(raport_link2=raport_link_id)
-        except RaportsLink.DoesNotExist:
-            return Response({"error": "RaportsLink with the given ID does not exist."}, status=404)
-
-        if raport_link1.raport_link1.id == raport_link2.raport_link2.id and raport_link2.raport_link1.id == raport_link1.raport_link2.id:
-            # delayed deletion
-            threading.Thread(target=self.delete_records, args=(raport_link1.raport_link1.id, raport_link1.raport_link2.id)).start()
-            return Response({"message": "Deletion scheduled in 5 seconds."}, status=200)
-
+#Deletion
     def delete_records(self, raport_1_id, raport_2_id):
         time.sleep(5)
         images = Images.objects.filter(raport_id__in=[raport_1_id, raport_2_id])
