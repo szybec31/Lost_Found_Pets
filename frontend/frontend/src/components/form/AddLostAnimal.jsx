@@ -16,7 +16,7 @@ const AddLostAnimal = () => {
     formData.append('image', image);
 
     // konfiguracja endpointu backendu
-    await axios.post('http://localhost:8000/api/reports', formData); 
+    await axios.post('http://localhost:8000/new_raport/', formData);
 
     alert('Zgłoszenie dodane!');
   }

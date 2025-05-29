@@ -46,9 +46,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             #verify_code_mail(email,code)               # Tymczasowo wyłączony  !!!!
             print(code)
             print("-----------")
-            return Response({"detail": "Kod weryfikacyjny wysłany na email."}, status=status.HTTP_200_OK)
+            return Response({"detail": "Kod weryfikacyjny wysłany na email.", "success": True}, status=status.HTTP_200_OK)
 
-        return Response({"detail": "Nieprawidłowy email lub hasło."}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": "Nieprawidłowy email lub hasło.", "success": False}, status=status.HTTP_401_UNAUTHORIZED)
 
 class Confirm2FACodeView(APIView):
     permission_classes = [AllowAny]

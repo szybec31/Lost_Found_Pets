@@ -4,7 +4,7 @@ import './HomePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('access_token');
+  const isLoggedIn = localStorage.getItem('access_token') !== 'false';
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
