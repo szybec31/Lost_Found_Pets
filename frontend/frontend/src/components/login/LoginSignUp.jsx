@@ -26,15 +26,23 @@ const LoginSignUp = () => {
   };
 
   const handleSubmit = async () => {
+      let res = null
     try {
       if (action === "Sign Up") {
         await registerUser(formData);
         await login(formData.email, formData.password);
       } else {
-        await login(formData.email, formData.password);
+        res = await login(formData.email, formData.password);
       }
-      console.log(formData);
-      navigate('/');
+      console.log(res);
+      if(res.success){
+          alert(res.detail)
+          navigate('/verify_token');
+      }
+      else{
+        alert(res.detail)
+      }
+      //navigate('/');
     } catch (error) {
       console.error('Error:', error);
       alert(action === "Sign Up" ? 'Registration failed' : 'Login failed');
