@@ -16,7 +16,7 @@ const AiModelInfo = () => {
   }
 
   return (
-    <div className="ai-container">
+    <main className="ai-container">
       <h1>Model AI do rozpoznawania zwierząt</h1>
       <p>
         Nasz model AI wykorzystuje sieci neuronowe do porównywania zdjęć zgłoszonych zwierząt.
@@ -31,7 +31,7 @@ const AiModelInfo = () => {
         <li>Podaje potencjalne dopasowania z najwyższym prawdopodobieństwem</li>
       </ul>
       <p>Model został wytrenowany na bazie tysięcy zdjęć zwierząt i jest stale udoskonalany.</p>
-    </div>
+    </main>
   );
 };
 

@@ -40,7 +40,7 @@ class Add_Raport_Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = Raports
-        fields = ['id','user_id','raport_type','animal_type','date_added','district','description','images', 'uploaded_images']
+        fields = ['id', 'raport_type', 'animal_type', 'date_added', 'district', 'description', 'images', 'uploaded_images']
 
     def validate_uploaded_images(self, value):
         if len(value) > 3:
@@ -49,21 +49,21 @@ class Add_Raport_Serializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
-        raport = Raports.objects.create(**validated_data)
+        user = self.context['request'].user
+        raport = Raports.objects.create(user=user, **validated_data)
 
         for image in uploaded_images:
-            # Images.objects.create(raport=raport, image=image)
             temp_instance = Images(raport=raport, image=image)
             temp_instance.save()
 
             image_path = temp_instance.image.path
             features = extract_features(image_path)
             features_str = ",".join(map(str, features))
-
             temp_instance.features = features_str
             temp_instance.save()
 
         return raport
+
 
 class RaportWithImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -82,7 +82,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class RaportDetailSerializer(serializers.ModelSerializer):  # wszystkie zdjęcia
     images = ImageSerializer(many=True, read_only=True)
-    user = UserPublicSerializer(source='user_id')
+    user = UserPublicSerializer()
 
     class Meta:
         model = Raports

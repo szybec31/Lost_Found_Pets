@@ -1,0 +1,85 @@
+.edit-raport-container {
+  max-width: 600px;
+  margin: 3rem auto;
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.edit-raport-container h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #2c3e50;
+}
+
+.edit-raport-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.edit-raport-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #34495e;
+}
+
+.edit-raport-form input,
+.edit-raport-form select,
+.edit-raport-form textarea {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  transition: border-color 0.3s ease;
+}
+
+.edit-raport-form input:focus,
+.edit-raport-form select:focus,
+.edit-raport-form textarea:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.edit-raport-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submit {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #6b9080;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.submit:hover {
+  background-color: #77a08e;
+}
+
+@media (max-width: 480px) {
+  .edit-raport-container {
+    margin: 2rem 1rem;
+    padding: 1.5rem;
+  }
+
+  .edit-raport-form label {
+    font-size: 0.95rem;
+  }
+
+  .submit {
+    font-size: 0.95rem;
+  }
+}

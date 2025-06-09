@@ -44,7 +44,7 @@ class CustomUserManager(BaseUserManager):
 class UserModel(AbstractBaseUser, PermissionsMixin):
 
     id = models.BigAutoField(primary_key=True, db_column='id')
-    email = models.EmailField(unique=True,db_column='email')
+    email = models.EmailField(unique=True, db_column='email')
     phone = models.CharField(max_length=9, validators=[phone_validator],db_column='phone_number')
     first_name = models.CharField(max_length=30,db_column='first_name')
     last_name = models.CharField(max_length=30,db_column='last_name')
@@ -75,7 +75,7 @@ class Raports(models.Model):
         DOG = "Dog"
 
     id = models.BigAutoField(primary_key=True, db_column='id')
-    user_id = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports",db_column="user_id")
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports", db_column="user_id")
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices,db_column="raport_type")
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices,db_column="animal_type")
     date_added = models.DateTimeField(db_column="date_added")

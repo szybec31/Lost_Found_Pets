@@ -9,9 +9,16 @@ const MenuDropdown = () => {
 
   const toggleMenu = () => setIsOpen(prev => !prev);
 
+  const isLoggedIn = !!localStorage.getItem('access_token');
+
   const handleLogout = () => {
     localStorage.removeItem('access_token');
-    localStorage.removeItem('user_email'); // jeśli używasz
+    localStorage.removeItem('user_email');
+    setIsOpen(false);
+    navigate('/login');
+  };
+
+  const handleLogin = () => {
     setIsOpen(false);
     navigate('/login');
   };
@@ -35,7 +42,12 @@ const MenuDropdown = () => {
           <Link to="/reports" onClick={() => setIsOpen(false)}>Zgłoszenia</Link>
           <Link to="/profile" onClick={() => setIsOpen(false)}>Profil</Link>
           <Link to="/help" onClick={() => setIsOpen(false)}>Pomoc</Link>
-          <button onClick={handleLogout} className="logout-button">Wyloguj się</button>
+
+          {isLoggedIn ? (
+            <button onClick={handleLogout} className="logout-button">Wyloguj się</button>
+          ) : (
+            <button onClick={handleLogin} className="logout-button">Zaloguj się</button>
+          )}
         </div>
       )}
     </div>

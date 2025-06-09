@@ -1,30 +1,51 @@
 const API_URL = 'http://127.0.0.1:8000';
 
 export const registerUser = async (userData) => {
-  const response = await fetch(`${API_URL}/new_user/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData)
-  });
-  return await response.json();
+  try {
+    const response = await fetch(`${API_URL}/new_user/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Registration failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
 };
 
 export const login = async (email, password) => {
-  const response = await fetch(`${API_URL}/login/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password })
-  });
-  const data = await response.json();
-  if(!!data.access){
-    localStorage.setItem('access_token', data.access);
-    localStorage.setItem('refresh_token', data.refresh);
-  }
-  else localStorage.setItem('access_token', false);
+  try {
+    const response = await fetch('http://127.0.0.1:8000/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.trim(),
+        password: password.trim()
+      }),
+    });
 
-  return data;
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, detail: data.detail || 'Login failed' };
+    }
+
+    return {
+      success: true,
+      access: data.access,
+      refresh: data.refresh,
+    };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, detail: 'Network error' };
+  }
 };
