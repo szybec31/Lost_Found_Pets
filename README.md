@@ -38,13 +38,15 @@
       http://localhost:8000/admin
 
    ```
-5. Uruchom aplikację:
-    
-- Dla serwera lokalnego:
-   ```
-    python manage.py runserver
-   ```
-- Dla serwera publicznego: należy zmienić adres na publiczny w pliku address.js
-   ```
-    python manage.py runserver 0.0.0.0:8000
-   ```
+5. Wyczyść bazę i dodaj dane:
+- Usuń wszystki tabele w MySQL Workbench
+- W środowisku wirtualnym wykonaj:
+```
+      python manage.py makemigrations
+      python manage.py migrate
+```
+- Wprowadź skrypyty do bazy Mysql z folderu Add_data:
+  - Wartości domyślne 
+  - Dane użytkowników
+  - Raporty
+  - Gotowe zdjęcia do folderu IMG_Database/Animals
