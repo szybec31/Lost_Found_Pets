@@ -205,14 +205,12 @@ class UserRaportDetailView(APIView):
             raport = Raports.objects.get(pk=pk, user_id=request.user.id)
             serializer = RaportDetailSerializer(raport)
 
-            # Sprawdzenie, czy użytkownik chce porównać obrazy
             compare_images = request.query_params.get('compare', 'false').lower() == 'true'
             comparison_results = []
 
             if compare_images:
-                # Wykonaj porównanie tylko raz, dla całego zgłoszenia
                 similar_images = self.compare_features(raport, raport.animal_type, raport.user_id)
-                comparison_results = similar_images  # bez opakowania w "image": ...
+                comparison_results = similar_images
 
             response_data = serializer.data
             if comparison_results:
@@ -225,7 +223,6 @@ class UserRaportDetailView(APIView):
     def compare_features(self, raport, animal_type, user_id):
         target_raport_type = 'Lost' if raport.raport_type == 'Found' else 'Found'
 
-
         existing_images = Images.objects.filter(
             raport__raport_type=target_raport_type,
             raport__animal_type=animal_type
@@ -234,6 +231,7 @@ class UserRaportDetailView(APIView):
         if not existing_images.exists():
             return [{"detail": "Brak obrazów w bazie do porównania."}]
 
+        # Konwersja wektorów cech z bieżącego zgłoszenia
         user_features_list = []
         for img in raport.images.all():
             if img.features:
@@ -244,6 +242,7 @@ class UserRaportDetailView(APIView):
         if not user_features_list:
             return [{"detail": "Brak prawidłowych wektorów cech w zgłoszeniu użytkownika."}]
 
+        # Konwersja wektorów cech z istniejącej bazy
         features_list = []
         image_data = []
         for img in existing_images:
@@ -263,38 +262,48 @@ class UserRaportDetailView(APIView):
         if not features_list:
             return [{"detail": "Brak prawidłowych wektorów cech do porównania."}]
 
+        # Przygotowanie danych
         dimension = 1280
-        index = faiss.IndexFlatL2(dimension)
-        features_array = np.array(features_list, dtype=np.float32)
+
+        def normalize(vectors):
+            norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+            return vectors / norms
+
+        features_array = normalize(np.array(features_list, dtype=np.float32))
+        user_features_array = normalize(np.array(user_features_list, dtype=np.float32))
+
+        # Cosine similarity via FAISS using inner product
+        index = faiss.IndexFlatIP(dimension)
         index.add(features_array)
 
-        # Oblicz dystanse do WSZYSTKICH obrazów dla KAŻDEGO wektora użytkownika
-        user_features_array = np.array(user_features_list, dtype=np.float32)
+        # Szukanie podobnych obrazów
         distances_matrix, indices_matrix = index.search(user_features_array, len(features_list))
 
         raport_scores = {}
 
-        # Sumuj najlepsze (najmniejsze) odległości per raport_id
-        for user_idx in range(len(user_features_list)):
+        for user_idx in range(len(user_features_array)):
             for i in range(len(indices_matrix[user_idx])):
                 idx = indices_matrix[user_idx][i]
-                distance = distances_matrix[user_idx][i]
+                similarity = float(distances_matrix[user_idx][i])  # wartość w zakresie [0,1]
+                similarity_percentage = round(similarity * 100, 2)
+
                 img_data = image_data[idx]
                 raport_id = img_data['raport_id']
 
-                if raport_id not in raport_scores or distance < raport_scores[raport_id]['distance']:
+                if raport_id not in raport_scores or similarity > raport_scores[raport_id]['similarity']:
                     raport_scores[raport_id] = {
                         "id": img_data['id'],
                         "raport_type": img_data['raport_type'],
                         "animal_type": img_data['animal_type'],
                         "date_added": img_data['date_added'],
                         "image": img_data['image'],
-                        "distance": float(distance)
+                        "similarity": similarity_percentage
                     }
 
-        # Zwróć tylko 3 najlepsze dopasowania — bez podziału na zdjęcia użytkownika
-        sorted_raports = sorted(raport_scores.values(), key=lambda x: x['distance'])[:3]
+        # Posortuj po najwyższym podobieństwie i zwróć top 3
+        sorted_raports = sorted(raport_scores.values(), key=lambda x: x['similarity'], reverse=True)[:3]
         return sorted_raports
+
 
 class UpdateUserRaportView(APIView):
     permission_classes = [IsAuthenticated]
