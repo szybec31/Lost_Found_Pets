@@ -2,9 +2,9 @@
     display: flex;
     flex-direction: column;
     margin: auto;
-    margin-top: 200px;
+    margin-top: 60px;
     width: 600px;
-    background: #ccc8c8;
+    background-color: #eaf4f4;
     padding-bottom: 30px;
 }
 
@@ -43,7 +43,7 @@
     margin: auto;
     width: 480px;
     height: 80px;
-    background: #eaeaea;
+    background: #ffffff;
     border-radius: 6px;
 }
 
@@ -85,12 +85,17 @@
     align-items: center;
     width: 220px;
     height: 59px;
-    color: #fff;
-    background: #0c9930;
+    color: #eaf4f4;
+    background-color: #6b9080;
     border-radius: 50px;
+    border: none;
     font-size: 19px;
     font-weight: 700;
     cursor: pointer;
+}
+
+.submit:hover{
+    background-color: #77a08e;
 }
 
 .gray{
@@ -100,10 +105,48 @@
 
 .back-button{
     position: absolute;
-    top: 20px;
+    top: 70px;
     left: 20px;
     color: #424242;
     text-decoration: none;
     font-size: 20px;
     font-weight: bold;
+}
+
+.notification {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+}
+
+.verification-info {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.back-to-login {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+  text-decoration: underline;
+}
+
+.back-to-login:hover {
+  color: #45a049;
+}
+
+.toggle-action {
+    text-align: center;
+}
+
+.auth-toggle-link {
+  cursor: pointer;
 }

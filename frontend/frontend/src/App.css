@@ -5,6 +5,7 @@
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+  margin: 0 auto;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -15,7 +16,6 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,7 +41,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1f9668;
+  background-color: #6b9080;
   padding: 10px 20px;
   color: white;
 }
@@ -49,8 +49,33 @@
 .logo {
   font-size: 20px;
   font-weight: bold;
+  color: #eaf4f4;
+  text-decoration: none;
 }
 
 .main-navbar button {
   color: white;
 }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-layout > main {
+  flex: 1;
+}
+

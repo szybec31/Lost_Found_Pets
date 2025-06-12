@@ -24,7 +24,6 @@
     overflow: hidden;
   }
   
-  /* Wspólne style dla linków i przycisku wylogowania */
   .menu-content a,
   .menu-content .logout-button {
     display: block;
@@ -39,10 +38,9 @@
     font-family: inherit;
     cursor: pointer;
   }
-  
-  /* Efekt hover dla wszystkich opcji */
+
   .menu-content a:hover,
   .menu-content .logout-button:hover {
-    background-color: #f0f0f0;
+    background-color: #eaf4f4;
   }
   

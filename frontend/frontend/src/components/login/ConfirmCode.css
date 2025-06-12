@@ -1,0 +1,112 @@
+.verify-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem auto;
+  max-width: 600px;
+  background: #f5f5f5;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.verify-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.verify-header .text {
+  color: #333;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.verify-header .underline {
+  width: 120px;
+  height: 6px;
+  background: linear-gradient(90deg, #0c9930, #087a25);
+  border-radius: 6px;
+}
+
+.verification-info {
+  text-align: center;
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  max-width: 80%;
+}
+
+.verify-input {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.verify-input input {
+  height: 50px;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 1.25rem;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.verify-input input:focus {
+  border-color: #0c9930;
+}
+
+.verify-button {
+  margin-top: 1.5rem;
+  width: 200px;
+  height: 50px;
+  background-color: #6b9080;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(12, 153, 48, 0.2);
+}
+
+.verify-button:hover {
+  background: linear-gradient(135deg, #087a25, #06661f);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(12, 153, 48, 0.3);
+}
+
+.verify-button:active {
+  transform: translateY(0);
+}
+
+.verify-error {
+  margin-top: 1.25rem;
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 0.75rem 1rem;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

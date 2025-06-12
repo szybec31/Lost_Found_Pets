@@ -19,11 +19,12 @@ import time
 import os
 from django.conf import settings
 
+
 # Create your views here.
 
 # Widok do listowania i tworzenia użytkowników
 class UserView(generics.ListCreateAPIView):
-    queryset = UserModel.objects.raw('SELECT * FROM app_user')  # Zapytanie do SQL o wszystkich użytkowników
+    queryset = UserModel.objects.all()  # Zapytanie do SQL o wszystkich użytkowników
     serializer_class = UserSerializer  # Serializer do danych użytkownika
     permission_classes = [AllowAny]  # Otwarty dostęp dla wszystkich użytkowników
 
@@ -92,17 +93,18 @@ class Add_Raport(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        data = request.data
+        data = request.data.copy()  # Zrób kopię, żeby nie modyfikować request.data bezpośrednio
         data['date_added'] = now()
-        data['user_id'] = request.user.id if request.user.is_authenticated else None
 
-        serializer = Add_Raport_Serializer(data=data)
+        serializer = Add_Raport_Serializer(data=data, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)  # Zwracanie zapisanych danych
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors)  # Zwracanie błędów walidacji
+            print("❌ Błędy walidacji:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class Raport_Details(APIView):
     permission_classes = [IsAuthenticated]
@@ -119,7 +121,7 @@ class SendRaportEmailView(APIView):
 
     def post(self, request, pk):
         raport = Raports.objects.get(pk=pk)
-        user = raport.user_id
+        user = raport.user
         reciver = user.email
         print(reciver)
 
@@ -327,7 +329,7 @@ class LinkRaportsView(APIView):
         except Raports.DoesNotExist:
             return Response({"error": "One or both of the specified raports do not exist."}, status=status.HTTP_404_NOT_FOUND)
 
-        if raport_1.user_id != request.user:
+        if raport_1.user != request.user:
             return Response({"error": "You are not the creator of the raport."}, status=status.HTTP_403_FORBIDDEN)
         
         if RaportsLink.objects.filter(raport_link1=raport_1, raport_link2=raport_2).exists():
@@ -361,3 +363,4 @@ class LinkRaportsView(APIView):
         RaportsLink.objects.filter(raport_link1=raport_1_id, raport_link2=raport_2_id).delete()
         RaportsLink.objects.filter(raport_link2=raport_1_id, raport_link1=raport_2_id).delete()
         print(f"Records for RaportsLink with raports id: {raport_1_id} and {raport_2_id} associated data have been deleted.")
+

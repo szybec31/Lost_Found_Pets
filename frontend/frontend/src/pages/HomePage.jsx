@@ -4,7 +4,7 @@ import './HomePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem('access_token') !== 'false';
+  const isLoggedIn = !!localStorage.getItem('access_token');
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -13,12 +13,6 @@ const HomePage = () => {
 
   return (
     <div className="home-container">
-
-      <header className="home-header">
-        <h1>Lost Found Pets</h1>
-        <p></p>
-      </header>
-
       <main className="home-main">
         <section className="home-welcome">
           <h2>Witamy w LostFoundPets!</h2>
@@ -53,6 +47,12 @@ const HomePage = () => {
             <p>Zarządzaj swoimi zgłoszeniami i danymi.</p>
             <Link to="/profile" className="action-button">Profil</Link>
           </div>
+
+          <div className={`action-card ${!isLoggedIn ? 'disabled' : ''}`}>
+            <h3>Twoje zgłoszenia</h3>
+              <p>Przejrzyj i zarządzaj swoimi zgłoszeniami.</p>
+              <Link to="/user_reports/" className="action-button">Moje zgłoszenia</Link>
+          </div>
         </section>
 
         {!isLoggedIn && (
@@ -62,11 +62,6 @@ const HomePage = () => {
           </div>
         )}
       </main>
-
-      <footer className="home-footer">
-        <p>&copy; 2025 LostFoundPets</p>
-        <p>Projekt stworzony w ramach pracy Projektu Zespołowego</p>
-      </footer>
     </div>
   );
 };
