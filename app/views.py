@@ -211,7 +211,7 @@ class UserRaportDetailView(APIView):
 
             if compare_images:
                 # Wykonaj porównanie tylko raz, dla całego zgłoszenia
-                similar_images = self.compare_features(raport, raport.animal_type)
+                similar_images = self.compare_features(raport, raport.animal_type, raport.user_id)
                 comparison_results = similar_images  # bez opakowania w "image": ...
 
             response_data = serializer.data
@@ -222,13 +222,14 @@ class UserRaportDetailView(APIView):
         except Raports.DoesNotExist:
             return Response({"detail": "Raport not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
 
-    def compare_features(self, raport, animal_type):
+    def compare_features(self, raport, animal_type, user_id):
         target_raport_type = 'Lost' if raport.raport_type == 'Found' else 'Found'
+
 
         existing_images = Images.objects.filter(
             raport__raport_type=target_raport_type,
             raport__animal_type=animal_type
-        ).select_related('raport')
+        ).exclude(raport__user_id=user_id).select_related('raport')
 
         if not existing_images.exists():
             return [{"detail": "Brak obrazów w bazie do porównania."}]
