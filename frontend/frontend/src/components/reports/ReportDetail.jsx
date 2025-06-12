@@ -49,7 +49,7 @@ const ReportDetail = () => {
         raport_type: item.raport_type || 'Unknown',
         animal_type: item.animal_type || 'Unknown',
         date_added: item.date_added || new Date().toISOString(),
-        distance: item.distance ?? null
+        similarity: item.similarity ?? null
       }));
       
       setSimilarReports(enrichedSimilarReports.slice(0, 3));
@@ -152,7 +152,7 @@ const ReportDetail = () => {
                   <p><strong>ID raportu:</strong> {rep.id}</p>
                   <p><strong>Typ:</strong> {rep.raport_type}</p>
                   <p><strong>Zwierzę:</strong> {rep.animal_type}</p>
-                  <p><strong>Podobieństwo:</strong> {rep.distance?.toFixed(2)}</p>
+                  <p><strong>Podobieństwo:</strong> {rep.similarity ? `${rep.similarity.toFixed(2)}%` : 'Brak danych'}</p>
                   <p><strong>Data:</strong> {new Date(rep.date_added).toLocaleDateString()}</p>
                 </div>
                 <div className="similar-actions">
