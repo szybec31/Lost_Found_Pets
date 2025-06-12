@@ -68,7 +68,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'lost_found_pets',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': 'roott',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
