@@ -70,7 +70,7 @@ class RaportWithImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Raports
-        fields = ['id', 'raport_type', 'animal_type', 'date_added', 'image']
+        fields = ['id', 'user_id', 'raport_type', 'animal_type', 'date_added', 'image']
 
     def get_image(self, obj):
         image = obj.images.first()  # tylko jedno zdjęcie
