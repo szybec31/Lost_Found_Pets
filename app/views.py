@@ -302,6 +302,22 @@ class UpdateUserRaportView(APIView):
         except Raports.DoesNotExist:
             return Response({"detail": "Raport not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Obsługa zdjęć
+        images = request.FILES.getlist('images')
+        if images:
+            # Usuń stare zdjęcia z bazy i dysku
+            old_images = Images.objects.filter(raport=raport)
+            for img in old_images:
+                if img.image and os.path.isfile(img.image.path):
+                    try:
+                        os.remove(img.image.path)
+                    except Exception as e:
+                        print(f"Error deleting file {img.image.path}: {e}")
+            old_images.delete()
+            # Dodaj nowe zdjęcia
+            for img in images[:3]:  # max 3 zdjęcia
+                Images.objects.create(raport=raport, image=img)
+
         serializer = Add_Raport_Serializer(raport, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
