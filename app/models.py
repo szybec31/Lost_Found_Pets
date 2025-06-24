@@ -75,7 +75,7 @@ class Raports(models.Model):
         DOG = "Dog"
 
     id = models.BigAutoField(primary_key=True, db_column='id')
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports", db_column="user_id")
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="raports")
     raport_type = models.CharField(max_length=5, choices=RaportTypeChoices,db_column="raport_type")
     animal_type = models.CharField(max_length=3, choices=AnimalTypeChoices,db_column="animal_type")
     date_added = models.DateTimeField(db_column="date_added")

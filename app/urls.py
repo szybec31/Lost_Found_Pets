@@ -9,7 +9,7 @@ from .views import UserView, RegisterUser, RaportsFiltered
 #from .views import new_user
 
 urlpatterns = [
-    path('',index,name='index'),
+    path('', index, name='index'),
 
 
 ]

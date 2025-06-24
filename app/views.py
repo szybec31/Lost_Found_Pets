@@ -108,6 +108,7 @@ class Add_Raport(APIView):
 
 class Raport_Details(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request, pk):
         try:
             raport = Raports.objects.get(pk=pk)
@@ -202,7 +203,7 @@ class UserRaportDetailView(APIView):
 
     def get(self, request, pk):
         try:
-            raport = Raports.objects.get(pk=pk, user_id=request.user.id)
+            raport = Raports.objects.get(pk=pk)
             serializer = RaportDetailSerializer(raport)
 
             compare_images = request.query_params.get('compare', 'false').lower() == 'true'
