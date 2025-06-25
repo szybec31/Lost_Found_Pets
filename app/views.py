@@ -131,7 +131,7 @@ class SendRaportEmailView(APIView):
         # Dane z frontendu
         sender_email = request.user.email
         sender_name = request.user.first_name
-        sender_name += request.user.last_name
+        sender_name += f" {request.user.last_name}"
         print(sender_email, sender_name)
         message = request.data.get("message")
 
