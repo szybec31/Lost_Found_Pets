@@ -170,3 +170,32 @@
   font-style: italic;
   margin-top: 1rem;
 }
+
+.email-section {
+  margin-top: 30px;
+}
+
+.email-textarea {
+  width: 100%;
+  padding: 10px;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.send-email-button {
+  padding: 0.5rem 1.2rem;
+  background-color: #6b9080;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 0.95rem;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.send-email-button:hover {
+  background-color: #5c8473;
+}

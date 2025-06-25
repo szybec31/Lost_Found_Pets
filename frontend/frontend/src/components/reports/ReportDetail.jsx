@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ReportDetail.css';
 
@@ -14,8 +14,12 @@ const ReportDetail = () => {
   const [compareError, setCompareError] = useState(null);
   const [linkSuccess, setLinkSuccess] = useState(null);
   const [linkError, setLinkError] = useState(null);
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailStatus, setEmailStatus] = useState(null);
+  const [emailError, setEmailError] = useState(null);
 
   const token = localStorage.getItem('access_token');
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`${BASE_URL}/user_raport/${id}/`, {
@@ -23,50 +27,45 @@ const ReportDetail = () => {
         Authorization: `Bearer ${token}`,
       },
     })
-  .then(response => {
-    console.log("Raport z API:", response.data);
-    setReport(response.data);
-  })
-  .catch(err => {
-    console.error("Błąd podczas pobierania szczegółów:", err);
-    setError('Nie udało się pobrać szczegółów.');
-  });
+      .then(response => {
+        setReport(response.data);
+      })
+      .catch(err => {
+        console.error("Błąd podczas pobierania szczegółów:", err);
+        setError('Nie udało się pobrać szczegółów.');
+      });
   }, [id, token]);
 
   const handleCompare = async () => {
-  setLoadingSimilar(true);
-  setCompareError(null);
-  setSimilarReports([]);
+    setLoadingSimilar(true);
+    setCompareError(null);
+    setSimilarReports([]);
 
-  try {
-    const res = await axios.get(`${BASE_URL}/user_raport/${id}/?compare=true`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const res = await axios.get(`${BASE_URL}/user_raport/${id}/?compare=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    console.log("Odpowiedź z API:", res.data); 
+      if (Array.isArray(res.data.comparison_results) && res.data.comparison_results.length > 0) {
+        const enrichedSimilarReports = res.data.comparison_results.map(item => ({
+          ...item,
+          raport_type: item.raport_type || 'Unknown',
+          animal_type: item.animal_type || 'Unknown',
+          date_added: item.date_added || new Date().toISOString(),
+          similarity: item.similarity ?? null
+        }));
 
-
-    if (Array.isArray(res.data.comparison_results) && res.data.comparison_results.length > 0) {
-      const enrichedSimilarReports = res.data.comparison_results.map(item => ({
-        ...item,
-        raport_type: item.raport_type || 'Unknown',
-        animal_type: item.animal_type || 'Unknown',
-        date_added: item.date_added || new Date().toISOString(),
-        similarity: item.similarity ?? null
-      }));
-      
-      setSimilarReports(enrichedSimilarReports.slice(0, 3));
-    } else {
-      setCompareError('Brak podobnych zgłoszeń.');
+        setSimilarReports(enrichedSimilarReports.slice(0, 3));
+      } else {
+        setCompareError('Brak podobnych zgłoszeń.');
+      }
+    } catch (err) {
+      console.error("Błąd porównywania:", err.response?.data || err);
+      setCompareError(err.response?.data?.message || 'Nie udało się znaleźć podobnych zgłoszeń.');
+    } finally {
+      setLoadingSimilar(false);
     }
-  } catch (err) {
-    console.error("Błąd porównywania:", err.response?.data || err);
-    setCompareError(err.response?.data?.message || 'Nie udało się znaleźć podobnych zgłoszeń.');
-  } finally {
-    setLoadingSimilar(false);
-  }
-};
-
+  };
 
   const handleLinkRaports = async (matchedId) => {
     setLinkSuccess(null);
@@ -91,10 +90,31 @@ const ReportDetail = () => {
     }
   };
 
+  const sendEmail = async () => {
+    setEmailStatus(null);
+    setEmailError(null);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/raport_details/${id}/send_email/`, {
+        message: emailMessage
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      setEmailStatus(response.data.detail || "Wiadomość została wysłana.");
+      setEmailMessage('');
+    } catch (err) {
+      console.error("Błąd wysyłania e-maila:", err);
+      const msg = err.response?.data?.error || "Nie udało się wysłać wiadomości.";
+      setEmailError(msg);
+    }
+  };
+
   if (error) return <div className="error-message">{error}</div>;
   if (!report) return <div>Ładowanie...</div>;
-
-  console.log("Dane raportu:", report);
 
   return (
     <div className="report-detail-container">
@@ -103,6 +123,7 @@ const ReportDetail = () => {
           Edytuj zgłoszenie
         </Link>
       )}
+
       <h2>Szczegóły zgłoszenia</h2>
       <div className="report-info">
         <p><strong>ID:</strong> {report.id}</p>
@@ -111,7 +132,7 @@ const ReportDetail = () => {
         <p><strong>Numer kontaktowy:</strong> {report.user.phone}</p>
         <p><strong>Opis:</strong> {report.description || 'Brak opisu'}</p>
         <p><strong>Email kontaktowy:</strong> {report.user.email}</p>
-                <p><strong>Data:</strong> {new Date(report.date_added).toLocaleString()}</p>
+        <p><strong>Data:</strong> {new Date(report.date_added).toLocaleString()}</p>
       </div>
 
       {report.images && report.images.length > 0 && (
@@ -128,9 +149,8 @@ const ReportDetail = () => {
       )}
 
       <div className="report-actions">
-
-        <button 
-          onClick={handleCompare} 
+        <button
+          onClick={handleCompare}
           className="compare-button"
           disabled={loadingSimilar}
         >
@@ -158,9 +178,14 @@ const ReportDetail = () => {
                   <p><strong>Data:</strong> {new Date(rep.date_added).toLocaleDateString()}</p>
                 </div>
                 <div className="similar-actions">
-                  <Link to={`/raport/${rep.id}`} className="details-button">Zobacz szczegóły</Link>
-                  <button 
-                    onClick={() => handleLinkRaports(rep.id)} 
+                  <button
+                    onClick={() => navigate(`/raport/${rep.id}`)}
+                    className="details-button"
+                  >
+                    Zobacz szczegóły
+                  </button>
+                  <button
+                    onClick={() => handleLinkRaports(rep.id)}
                     className="link-button"
                   >
                     Połącz zgłoszenia
@@ -171,6 +196,22 @@ const ReportDetail = () => {
           </div>
         </div>
       )}
+
+      <div className="email-section">
+        <h3>Wyślij wiadomość do właściciela raportu:</h3>
+        <textarea
+          rows="4"
+          placeholder="Wpisz wiadomość..."
+          value={emailMessage}
+          onChange={(e) => setEmailMessage(e.target.value)}
+          className="email-textarea"
+        />
+        <button onClick={sendEmail} className="send-email-button">
+          Wyślij email
+        </button>
+        {emailStatus && <p className="success-message">{emailStatus}</p>}
+        {emailError && <p className="error-message">{emailError}</p>}
+      </div>
     </div>
   );
 };
