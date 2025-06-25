@@ -35,20 +35,31 @@ const ConfirmCode = () => {
   };
 
   return (
-    <div className="container">
-      <h2>Weryfikacja kodu</h2>
-      <p>Wpisz kod weryfikacyjny otrzymany na e-mail.</p>
+    <div className="verify-container">
+      <div className="verify-header">
+        <div className="text">Weryfikacja kodu</div>
+        <div className="underline"></div>
+      </div>
 
-      <input
-        type="text"
-        maxLength="10"
-        placeholder="Wpisz kod"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-      />
-      <button onClick={handleVerify}>Zweryfikuj</button>
+      <div className="verification-info">
+        Wpisz kod weryfikacyjny otrzymany na e-mail.
+      </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div className="verify-input">
+        <input
+          type="text"
+          maxLength="10"
+          placeholder="Wpisz kod"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
+      </div>
+
+      <button className="verify-button" onClick={handleVerify}>
+        Zweryfikuj
+      </button>
+
+      {error && <div className="verify-error">{error}</div>}
     </div>
   );
 };
