@@ -108,8 +108,10 @@ const ReportDetail = () => {
         <p><strong>ID:</strong> {report.id}</p>
         <p><strong>Typ:</strong> {report.raport_type}</p>
         <p><strong>Zwierzę:</strong> {report.animal_type}</p>
+        <p><strong>Numer kontaktowy:</strong> {report.user.phone}</p>
         <p><strong>Opis:</strong> {report.description || 'Brak opisu'}</p>
-        <p><strong>Data:</strong> {new Date(report.date_added).toLocaleString()}</p>
+        <p><strong>Email kontaktowy:</strong> {report.user.email}</p>
+                <p><strong>Data:</strong> {new Date(report.date_added).toLocaleString()}</p>
       </div>
 
       {report.images && report.images.length > 0 && (
