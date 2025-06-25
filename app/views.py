@@ -204,7 +204,7 @@ class UserRaportDetailView(APIView):
     def get(self, request, pk):
         try:
             raport = Raports.objects.get(pk=pk)
-            serializer = RaportDetailSerializer(raport)
+            serializer = RaportDetailSerializer(raport, context={'request': request})
 
             compare_images = request.query_params.get('compare', 'false').lower() == 'true'
             comparison_results = []

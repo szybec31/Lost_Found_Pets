@@ -23,11 +23,14 @@ const ReportDetail = () => {
         Authorization: `Bearer ${token}`,
       },
     })
-    .then(response => setReport(response.data))
-    .catch(err => {
-      console.error("Błąd podczas pobierania szczegółów:", err);
-      setError('Nie udało się pobrać szczegółów.');
-    });
+  .then(response => {
+    console.log("Raport z API:", response.data);
+    setReport(response.data);
+  })
+  .catch(err => {
+    console.error("Błąd podczas pobierania szczegółów:", err);
+    setError('Nie udało się pobrać szczegółów.');
+  });
   }, [id, token]);
 
   const handleCompare = async () => {
@@ -91,6 +94,8 @@ const ReportDetail = () => {
   if (error) return <div className="error-message">{error}</div>;
   if (!report) return <div>Ładowanie...</div>;
 
+  console.log("Dane raportu:", report);
+
   return (
     <div className="report-detail-container">
       {report.is_owner && (
@@ -113,7 +118,7 @@ const ReportDetail = () => {
           <div className="images-grid">
             {report.images.map((img) => (
               <div key={img.id} className="image-container">
-                <img src={`${BASE_URL}${img.image}`} alt="Zdjęcie zgłoszenia" />
+                <img src={img.image} alt="Zdjęcie zgłoszenia" />
               </div>
             ))}
           </div>
@@ -121,11 +126,6 @@ const ReportDetail = () => {
       )}
 
       <div className="report-actions">
-        {report.is_owner && (
-          <Link to={`/raport/${id}/edit`} className="edit-button">
-            Edytuj zgłoszenie
-          </Link>
-        )}
 
         <button 
           onClick={handleCompare} 

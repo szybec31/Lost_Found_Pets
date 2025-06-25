@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './EditReport.css'
-
-console.log('Komponent EditRaport działa!');
+import './EditReport.css';
 
 const EditRaport = () => {
   const { id } = useParams();
@@ -15,6 +13,7 @@ const EditRaport = () => {
     district: '',
   });
 
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -53,17 +52,31 @@ const EditRaport = () => {
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const selectedFiles = Array.from(e.target.files).slice(0, 3); // max 3
+    setImages(selectedFiles);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('raport_type', formState.raport_type);
+    formData.append('animal_type', formState.animal_type);
+    formData.append('description', formState.description);
+    formData.append('district', formState.district);
+
+    images.forEach((image) => {
+      formData.append('images', image);
+    });
 
     try {
       const patchRes = await fetch(`http://localhost:8000/update_user_raport/${id}/`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
-        body: JSON.stringify(formState),
+        body: formData,
       });
 
       if (!patchRes.ok) {
@@ -110,6 +123,17 @@ const EditRaport = () => {
         <label>
           Opis:
           <textarea name="description" value={formState.description} onChange={handleChange} rows="4" />
+        </label>
+
+        <label>
+          Zdjęcia (max 3):
+          <input
+            type="file"
+            name="images"
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+          />
         </label>
 
         <button type="submit" className="submit">Zapisz zmiany</button>
