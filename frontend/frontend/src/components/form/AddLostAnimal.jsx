@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './AddLostAnimal.css';
+import { useNavigate } from 'react-router-dom';
+
 
 const AddLostAnimal = () => {
   const [animalType, setAnimalType] = useState('');
@@ -8,6 +10,7 @@ const AddLostAnimal = () => {
   const [images, setImages] = useState(null);
   const [raportType, setRaportType] = useState('');
   const [district, setDistrict] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,12 +40,12 @@ formData.append('animal_type', String(animalType));
       alert('Zgłoszenie dodane!');
       console.log('Odpowiedź:', response.data);
 
-      // Reset formularza
       setAnimalType('');
       setDescription('');
       setImages(null);
       setRaportType('');
       setDistrict('');
+      navigate('/');
     } catch (error) {
       console.error('Błąd przy dodawaniu zgłoszenia:', error.response?.data || error);
       alert('Wystąpił błąd podczas dodawania zgłoszenia.');

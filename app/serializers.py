@@ -83,10 +83,17 @@ class ImageSerializer(serializers.ModelSerializer):
 class RaportDetailSerializer(serializers.ModelSerializer):  # wszystkie zdjęcia
     images = ImageSerializer(many=True, read_only=True)
     user = UserPublicSerializer()
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Raports
-        fields = ['id', 'raport_type', 'animal_type', 'description', 'date_added', 'user', 'images']
+        fields = ['id', 'raport_type', 'animal_type', 'description', 'date_added', 'user', 'images', 'is_owner']
+
+    def get_is_owner(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            return obj.user == request.user
+        return False
 
 class RaportWithMultipleImagesSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()

@@ -48,4 +48,19 @@
   border-radius: 8px;
 }
 
+.edit-button {
+  display: inline-block;
+  padding: 8px 14px;
+  margin-bottom: 20px;
+  background-color: #6b9080;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: #5a7f6c;
+}
 

@@ -67,6 +67,7 @@
   text-decoration: none;
   display: inline-block;
   font-size: 0.95rem;
+  font-family: 'Quicksand', sans-serif;
 }
 
 .edit-button:hover {
